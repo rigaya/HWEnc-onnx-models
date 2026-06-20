@@ -1,0 +1,5 @@
+.venv_onnx/
+__pycache__/
+*.pyc
+*.egg-info/
+_work/

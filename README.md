@@ -1,0 +1,142 @@
+# HWEnc-onnx-models
+
+QSVEnc / NVEnc / VCEEnc の `--vpp-onnx` フィルタで使用する ONNX モデルのビルドツール群。
+
+20 ファミリー・185 モデル（FP32 173 + INT8 12）を、1コマンドでダウンロード → 変換 → INT8 量子化 → models.json 生成まで実行する。
+
+## クイックスタート
+
+```bash
+# 1. venv セットアップ（初回のみ）
+bash setup_env.sh
+
+# 2. フルビルド（ダウンロード + 変換 + INT8 量子化 + models.json 生成）
+.venv_onnx/bin/python run_all.py --output /path/to/output
+
+# 3. ドライラン（実際にはダウンロード・変換しない）
+.venv_onnx/bin/python run_all.py --output /path/to/output --dry-run
+```
+
+## run_all.py オプション
+
+| オプション | 説明 |
+|-----------|------|
+| `--output PATH` | 出力ルートディレクトリ（必須） |
+| `--skip-download` | venv セットアップ + ダウンロードをスキップ |
+| `--skip-convert` | FP32 ONNX 変換をスキップ |
+| `--skip-int8` | INT8 量子化をスキップ |
+| `--jobs N` | 変換の並列実行数（デフォルト: 1） |
+| `--dry-run` | 実行せず計画のみ表示 |
+
+## 出力ディレクトリ構造
+
+```
+output/
+├── repos/              # クローンしたソースリポジトリ
+├── realesrgan/         # Real-ESRGAN .pth ウェイト
+├── realcugan_weights/  # Real-CUGAN .pth ウェイト
+├── onnx/               # 変換済み ONNX モデル
+│   ├── acnet/
+│   ├── anime3d/
+│   ├── anime4k_gan/
+│   ├── anime4k_restore/
+│   ├── anime4k_upscale/
+│   ├── arnet/
+│   ├── artcnn/
+│   ├── bsrgan/
+│   ├── dncnn/
+│   ├── dpsr/
+│   ├── drunet/
+│   ├── esrgan/
+│   ├── fdncnn/
+│   ├── ffdnet/
+│   ├── fsrcnnx/
+│   ├── realcugan/
+│   ├── realesrgan/
+│   ├── srmd/
+│   ├── waifu2x/
+│   └── websr/
+└── models.json         # モデルマニフェスト
+```
+
+## モデル一覧
+
+| ファミリー | ソース種別 | FP32 | INT8 | 合計 |
+|-----------|-----------|------|------|------|
+| acnet | GLSL | 12 | - | 12 |
+| anime3d | GLSL | 2 | - | 2 |
+| anime4k_gan | GLSL | 6 | - | 6 |
+| anime4k_restore | GLSL | 6 | - | 6 |
+| anime4k_upscale | GLSL | 10 | - | 10 |
+| arnet | GLSL | 16 | - | 16 |
+| artcnn | ONNX (upstream) | 18 | 6 | 24 |
+| bsrgan | PyTorch .pth | 3 | - | 3 |
+| dncnn | PyTorch .pth | 6 | - | 6 |
+| dpsr | PyTorch .pth | 4 | 1 | 5 |
+| drunet | PyTorch .pth | 4 | 1 | 5 |
+| esrgan | PyTorch .pth | 5 | - | 5 |
+| fdncnn | PyTorch .pth | 4 | - | 4 |
+| ffdnet | PyTorch .pth | 4 | - | 4 |
+| fsrcnnx | C++ header | 4 | - | 4 |
+| realcugan | PyTorch .pth | 12 | 2 | 14 |
+| realesrgan | PyTorch .pth | 8 | 2 | 10 |
+| srmd | PyTorch .pth | 6 | - | 6 |
+| waifu2x | JSON weights | 34 | - | 34 |
+| websr | JSON weights | 9 | - | 9 |
+| **合計** | | **173** | **12** | **185** |
+
+## 変換ソース種別
+
+### GLSL シェーダ解析
+Anime4K, ACNet, ARNet, FSRCNNX のシェーダからウェイトを抽出し ONNX グラフを構築。
+
+### PyTorch .pth ウェイト
+KAIR, Real-ESRGAN, Real-CUGAN, BSRGAN 等の学習済みモデルを `torch.onnx.export` で変換。
+
+### JSON ウェイト
+waifu2x, websr の JSON 形式ウェイトから ONNX グラフを構築。
+
+### Upstream ONNX
+ArtCNN は作者が公開している ONNX ファイルをそのまま使用。
+
+### INT8 量子化
+nncf (Neural Network Compression Framework) の Post-Training Quantization で FP32 ONNX から INT8 ONNX を生成。
+
+## 依存関係
+
+- Python 3.10+
+- PyTorch (CPU)
+- ONNX
+- NumPy
+- SciPy
+- nncf
+- onnxruntime
+
+`setup_env.sh` が venv の作成と依存関係のインストールを行う。
+
+## ファイル構成
+
+| ファイル | 役割 |
+|---------|------|
+| `run_all.py` | 統合ランナー（ダウンロード → 変換 → INT8 → models.json） |
+| `setup_env.sh` | Python venv セットアップ |
+| `quantize_int8.py` | nncf による INT8 量子化 |
+| `export_*.py` | 各ファミリーの FP32 ONNX 変換スクリプト (18本) |
+| `extract_anime4k_upscale_gan_glsl.py` | Anime4K GAN GLSL 解析ヘルパー |
+| `requirements.txt` | Python 依存パッケージ |
+
+## ライセンス
+
+各モデルのライセンスは元リポジトリに準じる:
+
+- ArtCNN: MIT (Joao Chrisostomo)
+- KAIR (BSRGAN, DPSR, DRUNet, DnCNN, FDnCNN, FFDNet, SRMD, ESRGAN): MIT (Kai Zhang)
+- Real-ESRGAN: BSD-3-Clause (Xintao Wang)
+- Real-CUGAN: MIT (bilibili)
+- waifu2x: MIT (nagadomi)
+- Anime4K: MIT (bloc97)
+- ACNet/ARNet: MIT (TianZer)
+- Anime4KCPP/FSRCNNX: MIT (TianZer)
+- websr: MIT (sb2702)
+
+本リポジトリの変換スクリプト自体は MIT License。
