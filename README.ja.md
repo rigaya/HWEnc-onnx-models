@@ -6,6 +6,8 @@ QSVEnc / NVEnc / VCEEnc の `--vpp-onnx` フィルタで使用する ONNX モデ
 
 ## クイックスタート
 
+### Linux
+
 ```bash
 # 1. venv セットアップ（初回のみ）
 bash setup_env.sh
@@ -15,6 +17,19 @@ bash setup_env.sh
 
 # 3. ドライラン（実際にはダウンロード・変換しない）
 .venv_onnx/bin/python run_all.py --output /path/to/output --dry-run
+```
+
+### Windows
+
+```bat
+REM 1. venv セットアップ（初回のみ）
+setup_env.bat
+
+REM 2. フルビルド
+.venv_onnx\Scripts\python run_all.py --output C:\path\to\output
+
+REM 3. ドライラン
+.venv_onnx\Scripts\python run_all.py --output C:\path\to\output --dry-run
 ```
 
 ## run_all.py オプション
@@ -112,14 +127,15 @@ nncf (Neural Network Compression Framework) の Post-Training Quantization で F
 - nncf
 - onnxruntime
 
-`setup_env.sh` が venv の作成と依存関係のインストールを行う。
+`setup_env.sh` (Linux) / `setup_env.bat` (Windows) が venv の作成と依存関係のインストールを行う。
 
 ## ファイル構成
 
 | ファイル | 役割 |
 |---------|------|
 | `run_all.py` | 統合ランナー（ダウンロード → 変換 → INT8 → models.json） |
-| `setup_env.sh` | Python venv セットアップ |
+| `setup_env.sh` | Python venv セットアップ (Linux) |
+| `setup_env.bat` | Python venv セットアップ (Windows) |
 | `quantize_int8.py` | nncf による INT8 量子化 |
 | `export_*.py` | 各ファミリーの FP32 ONNX 変換スクリプト (18本) |
 | `extract_anime4k_upscale_gan_glsl.py` | Anime4K GAN GLSL 解析ヘルパー |

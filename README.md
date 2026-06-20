@@ -8,6 +8,8 @@ Generates 185 models (173 FP32 + 12 INT8) across 20 model families with a single
 
 ## Quick Start
 
+### Linux
+
 ```bash
 # 1. Set up venv (first time only)
 bash setup_env.sh
@@ -17,6 +19,19 @@ bash setup_env.sh
 
 # 3. Dry run (print plan without executing)
 .venv_onnx/bin/python run_all.py --output /path/to/output --dry-run
+```
+
+### Windows
+
+```bat
+REM 1. Set up venv (first time only)
+setup_env.bat
+
+REM 2. Full build
+.venv_onnx\Scripts\python run_all.py --output C:\path\to\output
+
+REM 3. Dry run
+.venv_onnx\Scripts\python run_all.py --output C:\path\to\output --dry-run
 ```
 
 ## run_all.py Options
@@ -114,14 +129,15 @@ Generates INT8 ONNX from FP32 ONNX using nncf (Neural Network Compression Framew
 - nncf
 - onnxruntime
 
-`setup_env.sh` creates the venv and installs all dependencies.
+`setup_env.sh` (Linux) or `setup_env.bat` (Windows) creates the venv and installs all dependencies.
 
 ## File Structure
 
 | File | Description |
 |------|-------------|
 | `run_all.py` | Integrated runner (download → convert → INT8 → models.json) |
-| `setup_env.sh` | Python venv setup |
+| `setup_env.sh` | Python venv setup (Linux) |
+| `setup_env.bat` | Python venv setup (Windows) |
 | `quantize_int8.py` | INT8 quantization via nncf |
 | `export_*.py` | Per-family FP32 ONNX conversion scripts (18 files) |
 | `extract_anime4k_upscale_gan_glsl.py` | Anime4K GAN GLSL parsing helper |

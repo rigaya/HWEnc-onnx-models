@@ -38,8 +38,12 @@ from pathlib import Path
 sys.dont_write_bytecode = True
 
 SCRIPT_DIR = Path(__file__).resolve().parent
-VENV_PYTHON = SCRIPT_DIR / ".venv_onnx" / "bin" / "python"
-SETUP_ENV_SH = SCRIPT_DIR / "setup_env.sh"
+if sys.platform == "win32":
+    VENV_PYTHON = SCRIPT_DIR / ".venv_onnx" / "Scripts" / "python.exe"
+    SETUP_ENV_SCRIPT = SCRIPT_DIR / "setup_env.bat"
+else:
+    VENV_PYTHON = SCRIPT_DIR / ".venv_onnx" / "bin" / "python"
+    SETUP_ENV_SCRIPT = SCRIPT_DIR / "setup_env.sh"
 
 # ---------------------------------------------------------------------------
 # Download tables (ported from setup_models.py, extended with the repos the
@@ -229,15 +233,18 @@ def download_repo(name: str, url: str, dest: Path, work_dir: Path, dry_run: bool
 
 def setup_venv(dry_run: bool) -> None:
     print("[PHASE 1] venv setup")
-    print(f"  bash {SETUP_ENV_SH}")
+    print(f"  {SETUP_ENV_SCRIPT}")
     if dry_run:
         return
     try:
-        subprocess.run(["bash", str(SETUP_ENV_SH)], check=True)
+        if sys.platform == "win32":
+            subprocess.run([str(SETUP_ENV_SCRIPT)], check=True, shell=True)
+        else:
+            subprocess.run(["bash", str(SETUP_ENV_SCRIPT)], check=True)
     except subprocess.CalledProcessError as err:
-        print(f"  [FAIL] setup_env.sh: return code {err.returncode}")
+        print(f"  [FAIL] {SETUP_ENV_SCRIPT.name}: return code {err.returncode}")
     except Exception as err:
-        print(f"  [FAIL] setup_env.sh: {err}")
+        print(f"  [FAIL] {SETUP_ENV_SCRIPT.name}: {err}")
 
 
 # ---------------------------------------------------------------------------
