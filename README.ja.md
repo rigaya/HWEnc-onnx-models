@@ -47,30 +47,30 @@ REM 3. ドライラン
 
 ```
 output/
-├── repos/              # クローンしたソースリポジトリ
-├── realesrgan/         # Real-ESRGAN .pth ウェイト
-├── realcugan_weights/  # Real-CUGAN .pth ウェイト
-├── onnx/               # 変換済み ONNX モデル
-│   ├── acnet/
-│   ├── anime3d/
-│   ├── anime4k_gan/
-│   ├── anime4k_restore/
-│   ├── anime4k_upscale/
-│   ├── arnet/
-│   ├── artcnn/
-│   ├── bsrgan/
-│   ├── dncnn/
-│   ├── dpsr/
-│   ├── drunet/
-│   ├── esrgan/
-│   ├── fdncnn/
-│   ├── ffdnet/
-│   ├── fsrcnnx/
-│   ├── realcugan/
-│   ├── realesrgan/
-│   ├── srmd/
-│   ├── waifu2x/
-│   └── websr/
+├── _work/              # 中間データ（ビルド後は削除可能）
+│   ├── repos/          #   クローンしたソースリポジトリ
+│   ├── realesrgan/     #   Real-ESRGAN .pth ウェイト
+│   └── realcugan_weights/ # Real-CUGAN .pth ウェイト
+├── acnet/              # 変換済み ONNX モデル（ファミリーごと）
+├── anime3d/
+├── anime4k_gan/
+├── anime4k_restore/
+├── anime4k_upscale/
+├── arnet/
+├── artcnn/
+├── bsrgan/
+├── dncnn/
+├── dpsr/
+├── drunet/
+├── esrgan/
+├── fdncnn/
+├── ffdnet/
+├── fsrcnnx/
+├── realcugan/
+├── realesrgan/
+├── srmd/
+├── waifu2x/
+├── websr/
 └── models.json         # モデルマニフェスト
 ```
 

@@ -3,7 +3,7 @@
 
 Runs the whole pipeline in one go:
 
-    Phase 1: build the local venv (tools/onnx_convert/setup_env.sh)
+    Phase 1: build the local venv (setup_env.sh / setup_env.bat)
     Phase 2: download repos + pretrained weights
     Phase 3: run every export_*.py to convert weights/GLSL/JSON to ONNX
     Phase 4: scan the output tree and emit models.json
@@ -16,10 +16,11 @@ Usage:
     python run_all.py --output OUT --jobs 4
 
 Layout produced under --output:
-    output/repos/...        cloned source repos (zip extracts)
-    output/realesrgan/...   Real-ESRGAN .pth release weights
-    output/onnx/<family>/   converted ONNX files
-    output/models.json      manifest (key = stem.lower(), path relative to onnx/)
+    output/_work/repos/...        cloned source repos (intermediate)
+    output/_work/realesrgan/...   Real-ESRGAN .pth weights (intermediate)
+    output/_work/realcugan_weights/...  Real-CUGAN .pth weights (intermediate)
+    output/<family>/              converted ONNX files
+    output/models.json            manifest (key = stem.lower(), path relative)
 """
 
 from __future__ import annotations
@@ -51,16 +52,16 @@ else:
 # ---------------------------------------------------------------------------
 
 REPOS = [
-    ("ArtCNN", "https://github.com/Artoriuz/ArtCNN/archive/refs/heads/main.zip", "repos/ArtCNN"),
-    ("KAIR", "https://github.com/cszn/KAIR/archive/refs/heads/master.zip", "repos/KAIR"),
-    ("Real-ESRGAN", "https://github.com/xinntao/Real-ESRGAN/archive/refs/heads/master.zip", "repos/Real-ESRGAN"),
-    ("waifu2x", "https://github.com/nagadomi/waifu2x/archive/refs/heads/master.zip", "repos/waifu2x"),
-    ("waifu2x-ncnn-vulkan", "https://github.com/nihui/waifu2x-ncnn-vulkan/archive/refs/heads/master.zip", "repos/waifu2x-ncnn-vulkan"),
-    ("Anime4KCPP", "https://github.com/TianZerL/Anime4KCPP/archive/refs/heads/master.zip", "repos/Anime4KCPP"),
-    ("ACNetGLSL", "https://github.com/TianZerL/ACNetGLSL/archive/refs/heads/master.zip", "repos/ACNetGLSL"),
-    ("Anime4K", "https://github.com/bloc97/Anime4K/archive/refs/heads/master.zip", "repos/Anime4K"),
-    ("websr", "https://github.com/sb2702/websr/archive/refs/heads/main.zip", "repos/websr"),
-    ("Real-CUGAN", "https://github.com/bilibili/ailab/archive/refs/heads/main.zip", "repos/Real-CUGAN"),
+    ("ArtCNN", "https://github.com/Artoriuz/ArtCNN/archive/refs/heads/main.zip", "_work/repos/ArtCNN"),
+    ("KAIR", "https://github.com/cszn/KAIR/archive/refs/heads/master.zip", "_work/repos/KAIR"),
+    ("Real-ESRGAN", "https://github.com/xinntao/Real-ESRGAN/archive/refs/heads/master.zip", "_work/repos/Real-ESRGAN"),
+    ("waifu2x", "https://github.com/nagadomi/waifu2x/archive/refs/heads/master.zip", "_work/repos/waifu2x"),
+    ("waifu2x-ncnn-vulkan", "https://github.com/nihui/waifu2x-ncnn-vulkan/archive/refs/heads/master.zip", "_work/repos/waifu2x-ncnn-vulkan"),
+    ("Anime4KCPP", "https://github.com/TianZerL/Anime4KCPP/archive/refs/heads/master.zip", "_work/repos/Anime4KCPP"),
+    ("ACNetGLSL", "https://github.com/TianZerL/ACNetGLSL/archive/refs/heads/master.zip", "_work/repos/ACNetGLSL"),
+    ("Anime4K", "https://github.com/bloc97/Anime4K/archive/refs/heads/master.zip", "_work/repos/Anime4K"),
+    ("websr", "https://github.com/sb2702/websr/archive/refs/heads/main.zip", "_work/repos/websr"),
+    ("Real-CUGAN", "https://github.com/bilibili/ailab/archive/refs/heads/main.zip", "_work/repos/Real-CUGAN"),
 ]
 
 REALCUGAN_WEIGHTS_URL = "https://github.com/bilibili/ailab/releases/download/Real-CUGAN/updated_weights.zip"
@@ -68,18 +69,18 @@ ANIME4K_RELEASE_URL = "https://github.com/bloc97/Anime4K/releases/download/v4.0.
 
 # R4F32 ONNX models were removed from ArtCNN main after commit e13ac6c7 (2026-05-12).
 ARTCNN_EXTRA_ONNX = [
-    ("https://github.com/Artoriuz/ArtCNN/raw/e13ac6c7/ONNX/Experiments/ArtCNN_R4F32.onnx", "onnx/artcnn/ArtCNN_R4F32.onnx"),
-    ("https://github.com/Artoriuz/ArtCNN/raw/e13ac6c7/ONNX/Experiments/ArtCNN_R4F32_DN.onnx", "onnx/artcnn/ArtCNN_R4F32_DN.onnx"),
+    ("https://github.com/Artoriuz/ArtCNN/raw/e13ac6c7/ONNX/Experiments/ArtCNN_R4F32.onnx", "artcnn/ArtCNN_R4F32.onnx"),
+    ("https://github.com/Artoriuz/ArtCNN/raw/e13ac6c7/ONNX/Experiments/ArtCNN_R4F32_DN.onnx", "artcnn/ArtCNN_R4F32_DN.onnx"),
 ]
 
 REALESRGAN_RELEASES = [
-    ("https://github.com/xinntao/Real-ESRGAN/releases/download/v0.2.5.0/realesr-animevideov3.pth", "realesrgan/realesr-animevideov3.pth"),
-    ("https://github.com/xinntao/Real-ESRGAN/releases/download/v0.2.5.0/realesr-general-x4v3.pth", "realesrgan/realesr-general-x4v3.pth"),
-    ("https://github.com/xinntao/Real-ESRGAN/releases/download/v0.2.5.0/realesr-general-wdn-x4v3.pth", "realesrgan/realesr-general-wdn-x4v3.pth"),
-    ("https://github.com/xinntao/Real-ESRGAN/releases/download/v0.1.0/RealESRGAN_x4plus.pth", "realesrgan/RealESRGAN_x4plus.pth"),
-    ("https://github.com/xinntao/Real-ESRGAN/releases/download/v0.2.2.4/RealESRGAN_x4plus_anime_6B.pth", "realesrgan/RealESRGAN_x4plus_anime_6B.pth"),
-    ("https://github.com/xinntao/Real-ESRGAN/releases/download/v0.2.1/RealESRGAN_x2plus.pth", "realesrgan/RealESRGAN_x2plus.pth"),
-    ("https://github.com/xinntao/Real-ESRGAN/releases/download/v0.1.1/RealESRNet_x4plus.pth", "realesrgan/RealESRNet_x4plus.pth"),
+    ("https://github.com/xinntao/Real-ESRGAN/releases/download/v0.2.5.0/realesr-animevideov3.pth", "_work/realesrgan/realesr-animevideov3.pth"),
+    ("https://github.com/xinntao/Real-ESRGAN/releases/download/v0.2.5.0/realesr-general-x4v3.pth", "_work/realesrgan/realesr-general-x4v3.pth"),
+    ("https://github.com/xinntao/Real-ESRGAN/releases/download/v0.2.5.0/realesr-general-wdn-x4v3.pth", "_work/realesrgan/realesr-general-wdn-x4v3.pth"),
+    ("https://github.com/xinntao/Real-ESRGAN/releases/download/v0.1.0/RealESRGAN_x4plus.pth", "_work/realesrgan/RealESRGAN_x4plus.pth"),
+    ("https://github.com/xinntao/Real-ESRGAN/releases/download/v0.2.2.4/RealESRGAN_x4plus_anime_6B.pth", "_work/realesrgan/RealESRGAN_x4plus_anime_6B.pth"),
+    ("https://github.com/xinntao/Real-ESRGAN/releases/download/v0.2.1/RealESRGAN_x2plus.pth", "_work/realesrgan/RealESRGAN_x2plus.pth"),
+    ("https://github.com/xinntao/Real-ESRGAN/releases/download/v0.1.1/RealESRNet_x4plus.pth", "_work/realesrgan/RealESRNet_x4plus.pth"),
 ]
 
 KAIR_MODELS = [
@@ -104,9 +105,9 @@ KAIR_MODELS = [
 
 # ---------------------------------------------------------------------------
 # Conversion table. Placeholders are filled per-run:
-#   {repos}  = output/repos
-#   {out}    = output/onnx
-#   {output} = output
+#   {repos}  = output/_work/repos
+#   {work}   = output/_work
+#   {out}    = output          (model output root)
 # Each export_*.py takes its inputs and an --output directory; failures are
 # logged and skipped so one broken family does not abort the whole run.
 # ---------------------------------------------------------------------------
@@ -122,7 +123,7 @@ CONVERT_COMMANDS = [
     ("export_anime4k_gan.py", ["--glsl-dir", "{repos}/Anime4K/glsl/Upscale", "--output", "{out}/anime4k_gan"]),
 
     # --- .pth based (network definitions imported from the external repos) ---
-    ("export_realesrgan.py", ["--models-dir", "{output}/realesrgan", "--output", "{out}/realesrgan"]),
+    ("export_realesrgan.py", ["--models-dir", "{work}/realesrgan", "--output", "{out}/realesrgan"]),
     ("export_bsrgan.py", ["--repo-root", "{repos}/KAIR", "--weights-dir", "{repos}/KAIR/model_zoo", "--output", "{out}/bsrgan"]),
     ("export_dpsr.py", ["--repo-root", "{repos}/KAIR", "--weights-dir", "{repos}/KAIR/model_zoo", "--output", "{out}/dpsr"]),
     ("export_drunet.py", ["--repo-root", "{repos}/KAIR", "--weights-dir", "{repos}/KAIR/model_zoo", "--output", "{out}/drunet"]),
@@ -130,7 +131,7 @@ CONVERT_COMMANDS = [
     ("export_kair_denoise.py", ["--repo-root", "{repos}/KAIR", "--weights-dir", "{repos}/KAIR/model_zoo", "--output", "{out}"]),
     ("export_kair_rrdb.py", ["--repo-root", "{repos}/KAIR", "--weights-dir", "{repos}/KAIR/model_zoo", "--output", "{out}/esrgan"]),
     ("export_srmd.py", ["--repo-root", "{repos}/KAIR", "--weights-dir", "{repos}/KAIR/model_zoo", "--output", "{out}/srmd"]),
-    ("export_realcugan.py", ["--repo-root", "{repos}/Real-CUGAN/Real-CUGAN", "--weights-dir", "{output}/realcugan_weights", "--output", "{out}/realcugan"]),
+    ("export_realcugan.py", ["--repo-root", "{repos}/Real-CUGAN/Real-CUGAN", "--weights-dir", "{work}/realcugan_weights", "--output", "{out}/realcugan"]),
 
     # --- JSON based ---
     ("export_waifu2x.py", ["--models-dir", "{repos}/waifu2x/models", "--output", "{out}/waifu2x"]),
@@ -264,7 +265,7 @@ def download_phase(output: Path, dry_run: bool) -> None:
 
     for name in KAIR_MODELS:
         url = f"https://github.com/cszn/KAIR/releases/download/v1.0/{name}"
-        download_file(url, output / "repos/KAIR/model_zoo" / name, dry_run)
+        download_file(url, output / "_work/repos/KAIR/model_zoo" / name, dry_run)
 
     # Anime4K Denoise GLSL are only in the v4.0.1 release zip, not the git repo
     supplement_anime4k_glsl(output, dry_run)
@@ -292,7 +293,7 @@ def download_phase(output: Path, dry_run: bool) -> None:
 def supplement_anime4k_glsl(output: Path, dry_run: bool) -> None:
     """Download Anime4K v4.0.1 release zip and extract Denoise GLSL shaders
     that are not in the git repo but are needed by export_anime4k_upscale_cnn.py."""
-    upscale_dir = output / "repos/Anime4K/glsl/Upscale"
+    upscale_dir = output / "_work/repos/Anime4K/glsl/Upscale"
     needed = [f"Anime4K_Upscale_Denoise_CNN_x2_{s}.glsl" for s in ("S", "M", "L", "VL", "UL")]
     if all((upscale_dir / n).exists() for n in needed):
         print(f"  [SKIP] Anime4K Denoise GLSL (already present)")
@@ -320,8 +321,8 @@ def supplement_anime4k_glsl(output: Path, dry_run: bool) -> None:
 
 def copy_kair_mat_files(output: Path, dry_run: bool) -> None:
     """Copy .mat files from KAIR/kernels/ to KAIR/model_zoo/ for SRMD export."""
-    kernels_dir = output / "repos/KAIR/kernels"
-    model_zoo = output / "repos/KAIR/model_zoo"
+    kernels_dir = output / "_work/repos/KAIR/kernels"
+    model_zoo = output / "_work/repos/KAIR/model_zoo"
     mat_files = ["srmd_pca_matlab.mat", "kernels_bicubicx234.mat"]
     for name in mat_files:
         src = kernels_dir / name
@@ -339,7 +340,7 @@ def copy_kair_mat_files(output: Path, dry_run: bool) -> None:
 
 
 def download_realcugan_weights(output: Path, dry_run: bool) -> None:
-    dest_dir = output / "realcugan_weights"
+    dest_dir = output / "_work/realcugan_weights"
     zip_path = output / "_work" / "realcugan_weights.zip"
     if dest_dir.is_dir() and any(dest_dir.glob("*.pth")):
         print(f"  [SKIP] Real-CUGAN weights (already exists: {dest_dir})")
@@ -367,8 +368,8 @@ def download_realcugan_weights(output: Path, dry_run: bool) -> None:
 
 
 def copy_artcnn(output: Path, dry_run: bool) -> None:
-    src = output / "repos/ArtCNN/ONNX"
-    dst = output / "onnx/artcnn"
+    src = output / "_work/repos/ArtCNN/ONNX"
+    dst = output / "artcnn"
     print(f"  [ARTCNN] copy {src} -> {dst}")
     if dry_run:
         return
@@ -389,8 +390,8 @@ def copy_artcnn(output: Path, dry_run: bool) -> None:
 
 
 POSTCONVERT_ALIASES = [
-    ("onnx/realesrgan", "RealESRGAN_x4plus_anime_6B.onnx", "realesrgan_anime_6b.onnx"),
-    ("onnx/realcugan", "up2x_latest_no_denoise.onnx", "upcunet2x_no_denoise.onnx"),
+    ("realesrgan", "RealESRGAN_x4plus_anime_6B.onnx", "realesrgan_anime_6b.onnx"),
+    ("realcugan", "up2x_latest_no_denoise.onnx", "upcunet2x_no_denoise.onnx"),
 ]
 
 
@@ -418,9 +419,9 @@ def create_postconvert_aliases(output: Path, dry_run: bool) -> None:
 
 def build_commands(output: Path) -> list[list[str]]:
     fields = {
-        "repos": str(output / "repos"),
-        "out": str(output / "onnx"),
-        "output": str(output),
+        "repos": str(output / "_work/repos"),
+        "work": str(output / "_work"),
+        "out": str(output),
     }
     commands: list[list[str]] = []
     for script, args in CONVERT_COMMANDS:
@@ -470,9 +471,8 @@ def convert_phase(output: Path, jobs: int, dry_run: bool) -> None:
 
 def quantize_phase(output: Path, dry_run: bool) -> None:
     print("[PHASE 3.5] INT8 quantization (nncf)")
-    onnx_root = output / "onnx"
     cmd = [str(VENV_PYTHON), str(SCRIPT_DIR / "quantize_int8.py"),
-           "--onnx-dir", str(onnx_root), "--output", str(onnx_root)]
+           "--onnx-dir", str(output), "--output", str(output)]
     if dry_run:
         cmd.append("--dry-run")
     run_command(cmd, False)
@@ -510,15 +510,14 @@ LICENSE_MAP = {
 
 def install_licenses(output: Path, dry_run: bool) -> None:
     print("[LICENSE] install license files")
-    onnx_root = output / "onnx"
     copied = 0
     for family, filename in LICENSE_MAP.items():
         src = LICENSES_DIR / filename
-        dst = onnx_root / family / "LICENSE.txt"
+        dst = output / family / "LICENSE.txt"
         if not src.exists():
             print(f"  [WARN] {src} not found")
             continue
-        if not (onnx_root / family).is_dir():
+        if not (output / family).is_dir():
             if not dry_run:
                 continue
         if dry_run:
@@ -535,21 +534,22 @@ def install_licenses(output: Path, dry_run: bool) -> None:
 # Phase 4: models.json
 # ---------------------------------------------------------------------------
 
+SCAN_EXCLUDE = {"_work"}
+
+
 def generate_models_json(output: Path, dry_run: bool) -> None:
     print("[PHASE 4] generate models.json")
-    onnx_root = output / "onnx"
     output_path = output / "models.json"
     if dry_run:
-        print(f"  [SCAN] {onnx_root}/**/*.onnx -> {output_path}")
-        return
-    if not onnx_root.is_dir():
-        print(f"  [SKIP] onnx dir not found: {onnx_root}")
+        print(f"  [SCAN] {output}/**/*.onnx -> {output_path}")
         return
 
     models: dict[str, dict] = {}
     duplicates = 0
-    for onnx_file in sorted(onnx_root.rglob("*.onnx")):
-        rel = onnx_file.relative_to(onnx_root)
+    for onnx_file in sorted(output.rglob("*.onnx")):
+        rel = onnx_file.relative_to(output)
+        if rel.parts[0] in SCAN_EXCLUDE:
+            continue
         key = onnx_file.stem.lower()
         if key in models:
             duplicates += 1

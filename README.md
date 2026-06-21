@@ -49,30 +49,30 @@ REM 3. Dry run
 
 ```
 output/
-├── repos/              # Cloned source repositories
-├── realesrgan/         # Real-ESRGAN .pth weights
-├── realcugan_weights/  # Real-CUGAN .pth weights
-├── onnx/               # Converted ONNX models
-│   ├── acnet/
-│   ├── anime3d/
-│   ├── anime4k_gan/
-│   ├── anime4k_restore/
-│   ├── anime4k_upscale/
-│   ├── arnet/
-│   ├── artcnn/
-│   ├── bsrgan/
-│   ├── dncnn/
-│   ├── dpsr/
-│   ├── drunet/
-│   ├── esrgan/
-│   ├── fdncnn/
-│   ├── ffdnet/
-│   ├── fsrcnnx/
-│   ├── realcugan/
-│   ├── realesrgan/
-│   ├── srmd/
-│   ├── waifu2x/
-│   └── websr/
+├── _work/              # Intermediate data (can be deleted after build)
+│   ├── repos/          #   Cloned source repositories
+│   ├── realesrgan/     #   Real-ESRGAN .pth weights
+│   └── realcugan_weights/ # Real-CUGAN .pth weights
+├── acnet/              # Converted ONNX models (one dir per family)
+├── anime3d/
+├── anime4k_gan/
+├── anime4k_restore/
+├── anime4k_upscale/
+├── arnet/
+├── artcnn/
+├── bsrgan/
+├── dncnn/
+├── dpsr/
+├── drunet/
+├── esrgan/
+├── fdncnn/
+├── ffdnet/
+├── fsrcnnx/
+├── realcugan/
+├── realesrgan/
+├── srmd/
+├── waifu2x/
+├── websr/
 └── models.json         # Model manifest
 ```
 
