@@ -26,7 +26,7 @@ def export_one(fname, sf, weights_dir, out_dir):
     net.eval()
     dummy = torch.randn(1, 3, 128, 128)
     out = os.path.join(out_dir, os.path.splitext(fname)[0] + ".onnx")
-    torch.onnx.export(net, dummy, out, opset_version=17, do_constant_folding=True,
+    torch.onnx.export(net, dummy, out, do_constant_folding=True,
         input_names=['input'], output_names=['output'],
         dynamic_axes={'input': {0:'batch',2:'height',3:'width'}, 'output': {0:'batch',2:'height',3:'width'}})
     import onnx; onnx.checker.check_model(onnx.load(out))

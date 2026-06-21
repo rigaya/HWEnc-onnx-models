@@ -76,7 +76,7 @@ def export_one(fname, scale, noise_flag, dmap15, weights_dir, out_dir):
     with torch.no_grad():
         o = wrap(dummy)
     out = os.path.join(out_dir, os.path.splitext(fname)[0] + ".onnx")
-    torch.onnx.export(wrap, dummy, out, opset_version=17, do_constant_folding=True,
+    torch.onnx.export(wrap, dummy, out, do_constant_folding=True,
         input_names=['input'], output_names=['output'],
         dynamic_axes={'input': {0:'batch',2:'height',3:'width'}, 'output': {0:'batch',2:'height',3:'width'}})
     import onnx; onnx.checker.check_model(onnx.load(out))

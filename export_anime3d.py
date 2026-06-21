@@ -94,7 +94,7 @@ def export_one(suffix, glsl_name, glsl_dir, out_dir):
     with torch.no_grad():
         o = net(dummy)
     out = os.path.join(out_dir, f"anime3d_{suffix}.onnx")
-    torch.onnx.export(net, dummy, out, opset_version=17, do_constant_folding=True,
+    torch.onnx.export(net, dummy, out, do_constant_folding=True,
         input_names=['input'], output_names=['output'],
         dynamic_axes={'input': {0:'batch',2:'height',3:'width'}, 'output': {0:'batch',2:'height',3:'width'}})
     import onnx; onnx.checker.check_model(onnx.load(out))

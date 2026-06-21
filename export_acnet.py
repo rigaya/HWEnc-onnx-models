@@ -116,7 +116,7 @@ def export_one(glsl_path, out_dir):
         o = net(dummy)
     assert tuple(o.shape[1:]) == (1, 128, 128), f"{name}: out {o.shape}"
     out = os.path.join(out_dir, out_name + ".onnx")
-    torch.onnx.export(net, dummy, out, opset_version=17, do_constant_folding=True,
+    torch.onnx.export(net, dummy, out, do_constant_folding=True,
         input_names=['input'], output_names=['output'],
         dynamic_axes={'input': {0:'batch',2:'height',3:'width'}, 'output': {0:'batch',2:'height',3:'width'}})
     import onnx; onnx.checker.check_model(onnx.load(out))
