@@ -146,16 +146,25 @@ Generates INT8 ONNX from FP32 ONNX using nncf (Neural Network Compression Framew
 
 ## License
 
-Each model's license follows its upstream repository:
+Each model's license follows its upstream repository.
+A `LICENSE.txt` is placed in each `onnx/<family>/` directory with full provenance details.
 
-- ArtCNN: MIT (Joao Chrisostomo)
-- KAIR (BSRGAN, DPSR, DRUNet, DnCNN, FDnCNN, FFDNet, SRMD, ESRGAN): MIT (Kai Zhang)
-- Real-ESRGAN: BSD-3-Clause (Xintao Wang)
-- Real-CUGAN: MIT (bilibili)
-- waifu2x: MIT (nagadomi)
-- Anime4K: MIT (bloc97)
-- ACNet/ARNet: MIT (TianZer)
-- Anime4KCPP/FSRCNNX: MIT (TianZer)
-- websr: MIT (sb2702)
+| Family | License | Author / Copyright |
+|--------|---------|-------------------|
+| ACNet, ARNet | MIT | TianZerL (ACNetGLSL) |
+| Anime4K (anime3d, anime4k_gan, anime4k_restore, anime4k_upscale) | MIT | bloc97 |
+| ArtCNN | MIT | Joao Chrisostomo |
+| BSRGAN | MIT (KAIR) / Apache-2.0 (BSRGAN repo) | Kai Zhang |
+| DnCNN, DPSR, DRUNet, ESRGAN, FDnCNN, FFDNet, SRMD | MIT | Kai Zhang (KAIR) |
+| FSRCNNX | **GPL-3.0** (igv's trained weights) | igv, nessotrin, TianZerL |
+| Real-CUGAN | MIT | bilibili |
+| Real-ESRGAN | BSD-3-Clause | Xintao Wang |
+| waifu2x | MIT | nagadomi, nihui (ncnn topology) |
+| websr | MIT | sb2702, bloc97 |
+
+**Note on FSRCNNX:** The weights originate from
+[igv/FSRCNN-TensorFlow](https://github.com/igv/FSRCNN-TensorFlow) (GPL-3.0),
+not from the MIT-licensed Anime4KCPP code that bundles them.
+See `licenses/fsrcnnx.txt` for details.
 
 The conversion scripts in this repository are licensed under the MIT License.

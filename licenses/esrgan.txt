@@ -1,0 +1,10 @@
+ESRGAN ONNX Models
+
+Source: https://github.com/cszn/KAIR (code and weights)
+License: MIT
+Copyright (c) 2020 Kai Zhang
+
+Includes ESRGAN.pth (originally by xinntao), RealSR_DPED.pth,
+RealSR_JPEG.pth, FSSR_DPED.pth, FSSR_JPEG.pth.
+Network definition from KAIR/models/network_rrdbnet.py.
+Pretrained weights (.pth) from KAIR model_zoo (GitHub Releases).

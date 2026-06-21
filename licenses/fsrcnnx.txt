@@ -1,0 +1,22 @@
+FSRCNNX ONNX Models
+
+Weights source: https://github.com/TianZerL/Anime4KCPP
+                (core/include/AC/Core/Model/Param/FSRCNNX.p)
+Anime4KCPP License: MIT
+Copyright (c) 2020 TianZer
+
+IMPORTANT — Weight provenance:
+The FSRCNNX weights in Anime4KCPP originate from igv's FSRCNN-TensorFlow
+fork (https://github.com/igv/FSRCNN-TensorFlow), which is licensed under
+GPL-3.0. The original upstream (haasn/FSRCNN-TensorFlow) was MIT, but igv
+changed the license to GPL-3.0 when publishing the trained FSRCNNX weights.
+
+The DistortPlus (_dp) variants may originate from nessotrin's work on the
+HelpSeeker/FSRCNN-TensorFlow fork, which retains the MIT license.
+
+Given this mixed provenance, the FSRCNNX weights should be treated as
+GPL-3.0 unless independently verified otherwise.
+
+  Normal variants (s, m):       GPL-3.0 (igv)
+  DistortPlus variants (s_dp, m_dp): Possibly MIT (nessotrin/HelpSeeker),
+                                      but provenance not fully confirmed

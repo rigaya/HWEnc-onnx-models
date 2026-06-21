@@ -1,0 +1,7 @@
+ACNet ONNX Models
+
+Source: https://github.com/TianZerL/ACNetGLSL
+License: MIT
+Copyright (c) 2020 TianZer
+
+Weights extracted from ACNetGLSL GLSL shaders (acnet_f8b*.glsl).

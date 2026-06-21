@@ -1,0 +1,9 @@
+SRMD ONNX Models
+
+Source: https://github.com/cszn/KAIR
+License: MIT
+Copyright (c) 2020 Kai Zhang
+
+Network definition from KAIR/models/network_srmd.py.
+Pretrained weights (.pth) and PCA kernel files (.mat) from
+KAIR model_zoo and kernels/ directory.

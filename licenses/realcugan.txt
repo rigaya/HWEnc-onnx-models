@@ -1,0 +1,10 @@
+Real-CUGAN ONNX Models
+
+Source: https://github.com/bilibili/ailab (Real-CUGAN subfolder)
+License: MIT
+Copyright (c) 2022 bilibili
+
+Network definition from Real-CUGAN/upcunet_v3.py.
+Pretrained weights (.pth) from GitHub Releases
+(https://github.com/bilibili/ailab/releases/tag/Real-CUGAN).
+INT8 variants quantized using nncf Post-Training Quantization.

@@ -1,0 +1,10 @@
+ArtCNN ONNX Models
+
+Source: https://github.com/Artoriuz/ArtCNN
+License: MIT
+Copyright (c) 2024 Joao Chrisostomo
+
+Pre-built ONNX files from the upstream repository.
+ArtCNN_R4F32 / R4F32_DN retrieved from commit e13ac6c7
+(removed from main after 2026-05-22).
+INT8 variants quantized using nncf Post-Training Quantization.

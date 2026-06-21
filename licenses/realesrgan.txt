@@ -1,0 +1,9 @@
+Real-ESRGAN ONNX Models
+
+Source: https://github.com/xinntao/Real-ESRGAN
+License: BSD-3-Clause
+Copyright (c) 2021 Xintao Wang
+
+Network definitions (RRDBNet, SRVGGNetCompact) included in the
+export script. Pretrained weights (.pth) from GitHub Releases.
+INT8 variants quantized using nncf Post-Training Quantization.

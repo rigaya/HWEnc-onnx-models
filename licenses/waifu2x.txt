@@ -1,0 +1,11 @@
+waifu2x ONNX Models
+
+Source: https://github.com/nagadomi/waifu2x (JSON weight files)
+        https://github.com/nihui/waifu2x-ncnn-vulkan (CUNet .param topology)
+License: MIT (both repositories)
+Copyright (c) 2015 nagadomi
+Copyright (c) 2019 nihui
+
+vgg_7 and upconv_7 models: weights from waifu2x/models/ JSON files.
+CUNet models: topology from waifu2x-ncnn-vulkan .param files,
+weights from waifu2x/models/cunet/art/ JSON files.

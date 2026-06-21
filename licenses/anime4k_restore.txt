@@ -1,0 +1,7 @@
+Anime4K Restore CNN ONNX Models
+
+Source: https://github.com/bloc97/Anime4K
+License: MIT
+Copyright (c) 2019-2024 bloc97
+
+Weights extracted from Anime4K_Restore_CNN_*.glsl shaders.

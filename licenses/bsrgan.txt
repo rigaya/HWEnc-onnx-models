@@ -1,0 +1,9 @@
+BSRGAN ONNX Models
+
+Source: https://github.com/cszn/KAIR (code and weights)
+        https://github.com/cszn/BSRGAN (original paper repository)
+License: MIT (KAIR), Apache-2.0 (BSRGAN standalone repo)
+Copyright (c) 2020 Kai Zhang
+
+Network definition from KAIR/models/network_rrdbnet.py.
+Pretrained weights (.pth) from KAIR model_zoo (GitHub Releases).

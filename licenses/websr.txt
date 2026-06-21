@@ -1,0 +1,11 @@
+websr ONNX Models
+
+Source: https://github.com/sb2702/websr
+License: MIT
+Copyright (c) 2023 Sam Bhattacharyya (sb2702)
+
+CNN-2x-S models reconstructed from JSON weight files.
+Training corpus variants:
+  _an: bloc97 anime corpus
+  _rl: sb2702 Xiph.org retrain
+  _3d: derf retrain

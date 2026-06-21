@@ -1,0 +1,9 @@
+Anime4K Upscale CNN ONNX Models
+
+Source: https://github.com/bloc97/Anime4K
+License: MIT
+Copyright (c) 2019-2024 bloc97
+
+Weights extracted from Anime4K_Upscale_CNN_x2_*.glsl and
+Anime4K_Upscale_Denoise_CNN_x2_*.glsl shaders.
+Denoise shaders are distributed in the v4.0.1 release archive.

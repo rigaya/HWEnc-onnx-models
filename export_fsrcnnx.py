@@ -1,5 +1,4 @@
-"""Export Anime4KCPP FSRCNNX models (MIT) to ONNX from the ORIGINAL FSRCNNX.p
-header -- the same constexpr-weight file kaizen #includes, so this is bit-exact.
+"""Export Anime4KCPP FSRCNNX models to ONNX from the ORIGINAL FSRCNNX.p header.
 
 FSRCNNX is a luma (1ch -> 1ch, 2x) net:
   head    : conv 1->F 5x5 (identity)
@@ -10,8 +9,10 @@ FSRCNNX is a luma (1ch -> 1ch, 2x) net:
 
 Four variants: F=8 / 16 (s / m tiers) x {Normal, DistortPlus} (the *_dp strongly
 denoise). Weights are stored NHWC (= OHWI) and transposed to OIHW here; PReLU
-alphas are stored alongside (body x4 + fusion = 5 PReLU layers). Anime4KCPP is
-MIT. See ../ACKNOWLEDGMENTS.md.
+alphas are stored alongside (body x4 + fusion = 5 PReLU layers).
+
+Anime4KCPP code is MIT (TianZerL), but the FSRCNNX weights originate from
+igv/FSRCNN-TensorFlow (GPL-3.0). See licenses/fsrcnnx.txt for details.
 """
 import os, re, argparse, warnings
 warnings.filterwarnings("ignore")

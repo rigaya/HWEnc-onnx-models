@@ -479,6 +479,59 @@ def quantize_phase(output: Path, dry_run: bool) -> None:
 
 
 # ---------------------------------------------------------------------------
+# License files
+# ---------------------------------------------------------------------------
+
+LICENSES_DIR = SCRIPT_DIR / "licenses"
+
+LICENSE_MAP = {
+    "acnet": "acnet.txt",
+    "anime3d": "anime3d.txt",
+    "anime4k_gan": "anime4k_gan.txt",
+    "anime4k_restore": "anime4k_restore.txt",
+    "anime4k_upscale": "anime4k_upscale.txt",
+    "arnet": "arnet.txt",
+    "artcnn": "artcnn.txt",
+    "bsrgan": "bsrgan.txt",
+    "dncnn": "dncnn.txt",
+    "dpsr": "dpsr.txt",
+    "drunet": "drunet.txt",
+    "esrgan": "esrgan.txt",
+    "fdncnn": "fdncnn.txt",
+    "ffdnet": "ffdnet.txt",
+    "fsrcnnx": "fsrcnnx.txt",
+    "realcugan": "realcugan.txt",
+    "realesrgan": "realesrgan.txt",
+    "srmd": "srmd.txt",
+    "waifu2x": "waifu2x.txt",
+    "websr": "websr.txt",
+}
+
+
+def install_licenses(output: Path, dry_run: bool) -> None:
+    print("[LICENSE] install license files")
+    onnx_root = output / "onnx"
+    copied = 0
+    for family, filename in LICENSE_MAP.items():
+        src = LICENSES_DIR / filename
+        dst = onnx_root / family / "LICENSE.txt"
+        if not src.exists():
+            print(f"  [WARN] {src} not found")
+            continue
+        if not (onnx_root / family).is_dir():
+            if not dry_run:
+                continue
+        if dry_run:
+            print(f"  [LICENSE] {family}/LICENSE.txt")
+            copied += 1
+            continue
+        dst.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(src, dst)
+        copied += 1
+    print(f"  {copied} license files installed")
+
+
+# ---------------------------------------------------------------------------
 # Phase 4: models.json
 # ---------------------------------------------------------------------------
 
@@ -542,6 +595,7 @@ def main() -> int:
     else:
         print("[SKIP] INT8 quantization (--skip-int8)")
 
+    install_licenses(output, args.dry_run)
     generate_models_json(output, args.dry_run)
     print("[RUN_ALL] done")
     return 0

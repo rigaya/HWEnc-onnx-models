@@ -144,16 +144,25 @@ nncf (Neural Network Compression Framework) の Post-Training Quantization で F
 
 ## ライセンス
 
-各モデルのライセンスは元リポジトリに準じる:
+各モデルのライセンスは元リポジトリに準じる。
+各 `onnx/<ファミリー>/` ディレクトリに `LICENSE.txt` を配置し、由来を詳述している。
 
-- ArtCNN: MIT (Joao Chrisostomo)
-- KAIR (BSRGAN, DPSR, DRUNet, DnCNN, FDnCNN, FFDNet, SRMD, ESRGAN): MIT (Kai Zhang)
-- Real-ESRGAN: BSD-3-Clause (Xintao Wang)
-- Real-CUGAN: MIT (bilibili)
-- waifu2x: MIT (nagadomi)
-- Anime4K: MIT (bloc97)
-- ACNet/ARNet: MIT (TianZer)
-- Anime4KCPP/FSRCNNX: MIT (TianZer)
-- websr: MIT (sb2702)
+| ファミリー | ライセンス | 著作者 |
+|-----------|-----------|--------|
+| ACNet, ARNet | MIT | TianZerL (ACNetGLSL) |
+| Anime4K (anime3d, anime4k_gan, anime4k_restore, anime4k_upscale) | MIT | bloc97 |
+| ArtCNN | MIT | Joao Chrisostomo |
+| BSRGAN | MIT (KAIR) / Apache-2.0 (BSRGANリポジトリ) | Kai Zhang |
+| DnCNN, DPSR, DRUNet, ESRGAN, FDnCNN, FFDNet, SRMD | MIT | Kai Zhang (KAIR) |
+| FSRCNNX | **GPL-3.0** (igvの学習済み重み) | igv, nessotrin, TianZerL |
+| Real-CUGAN | MIT | bilibili |
+| Real-ESRGAN | BSD-3-Clause | Xintao Wang |
+| waifu2x | MIT | nagadomi, nihui (ncnnトポロジー) |
+| websr | MIT | sb2702, bloc97 |
+
+**FSRCNNXについて:** 重みの出自は
+[igv/FSRCNN-TensorFlow](https://github.com/igv/FSRCNN-TensorFlow) (GPL-3.0) であり、
+バンドル元の Anime4KCPP (MIT) のライセンスとは異なる。
+詳細は `licenses/fsrcnnx.txt` を参照。
 
 本リポジトリの変換スクリプト自体は MIT License。

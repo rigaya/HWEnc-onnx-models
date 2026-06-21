@@ -1,0 +1,7 @@
+Anime4K 3DGraphics Upscale ONNX Models
+
+Source: https://github.com/bloc97/Anime4K
+License: MIT
+Copyright (c) 2019-2024 bloc97
+
+Weights extracted from Anime4K_3DGraphics_Upscale_x2_US.glsl.

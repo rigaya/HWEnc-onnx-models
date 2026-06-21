@@ -1,0 +1,9 @@
+DPSR ONNX Models
+
+Source: https://github.com/cszn/KAIR
+License: MIT
+Copyright (c) 2020 Kai Zhang
+
+Network definition from KAIR/models/network_usrnet.py (DPSRNet).
+Pretrained weights (.pth) from KAIR model_zoo (GitHub Releases).
+INT8 variant quantized using nncf Post-Training Quantization.
