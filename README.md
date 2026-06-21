@@ -124,6 +124,7 @@ Generates INT8 ONNX from FP32 ONNX using nncf (Neural Network Compression Framew
 - Python 3.10+
 - PyTorch (CPU)
 - ONNX
+- onnxscript
 - NumPy
 - SciPy
 - nncf

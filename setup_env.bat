@@ -18,8 +18,8 @@ if not exist "%VENV_DIR%\Scripts\python.exe" (
 call "%VENV_DIR%\Scripts\activate.bat"
 
 pip install --quiet --upgrade pip
-pip install --quiet -r "%SCRIPT_DIR%requirements.txt"
 pip install --quiet torch --index-url https://download.pytorch.org/whl/cpu
+pip install --quiet -r "%SCRIPT_DIR%requirements.txt"
 
 echo.
 python --version

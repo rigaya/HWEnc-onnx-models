@@ -122,6 +122,7 @@ nncf (Neural Network Compression Framework) の Post-Training Quantization で F
 - Python 3.10+
 - PyTorch (CPU)
 - ONNX
+- onnxscript
 - NumPy
 - SciPy
 - nncf
