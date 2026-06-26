@@ -62,6 +62,7 @@ REPOS = [
     ("Anime4K", "https://github.com/bloc97/Anime4K/archive/refs/heads/master.zip", "_work/repos/Anime4K"),
     ("websr", "https://github.com/sb2702/websr/archive/refs/heads/main.zip", "_work/repos/websr"),
     ("Real-CUGAN", "https://github.com/bilibili/ailab/archive/refs/heads/main.zip", "_work/repos/Real-CUGAN"),
+    ("mpv-prescalers", "https://github.com/bjin/mpv-prescalers/archive/refs/heads/source.zip", "_work/repos/mpv-prescalers"),
 ]
 
 REALCUGAN_WEIGHTS_URL = "https://github.com/bilibili/ailab/releases/download/Real-CUGAN/updated_weights.zip"
@@ -137,6 +138,9 @@ CONVERT_COMMANDS = [
     ("export_waifu2x.py", ["--models-dir", "{repos}/waifu2x/models", "--output", "{out}/waifu2x"]),
     ("export_waifu2x_cunet.py", ["--param-dir", "{repos}/waifu2x-ncnn-vulkan/models/models-cunet", "--json-dir", "{repos}/waifu2x/models/cunet/art", "--output", "{out}/waifu2x"]),
     ("export_websr.py", ["--json-dir", "{repos}/websr/weights/anime4k", "--output", "{out}/websr"]),
+
+    # --- RAVU (trained weights from mpv-prescalers, LGPL-3.0) ---
+    ("export_ravu.py", ["--repo-root", "{repos}/mpv-prescalers", "--output", "{out}/ravu"]),
 ]
 
 
@@ -500,6 +504,7 @@ LICENSE_MAP = {
     "fdncnn": "fdncnn.txt",
     "ffdnet": "ffdnet.txt",
     "fsrcnnx": "fsrcnnx.txt",
+    "ravu": "ravu.txt",
     "realcugan": "realcugan.txt",
     "realesrgan": "realesrgan.txt",
     "srmd": "srmd.txt",

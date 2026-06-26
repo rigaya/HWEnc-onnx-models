@@ -1,0 +1,15 @@
+RAVU (Rapid and Accurate Video Upscaling)
+License: LGPL-3.0 (GNU Lesser General Public License v3.0)
+Author: bjin
+Source: https://github.com/bjin/mpv-prescalers
+
+The trained weights and generated shaders are published under LGPL-3.0
+(the master/source branch). The generator code is BSD-3-Clause, but the
+ONNX files embed the trained weights, so LGPL-3.0 applies.
+
+This was confirmed by the author in upstream issue #41:
+  "you license specifically your trained weights under LGPLv3
+   but the generating code under BSD3" — "Yes."
+
+Converted to ONNX by rigaya for use with QSVEnc/NVEnc/VCEEnc --vpp-onnx.
+No retraining was performed; only format conversion.

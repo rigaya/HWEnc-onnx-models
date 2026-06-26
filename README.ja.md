@@ -2,7 +2,7 @@
 
 QSVEnc / NVEnc / VCEEnc の `--vpp-onnx` フィルタで使用する ONNX モデルのビルドツール群。
 
-20 ファミリー・185 モデル（FP32 173 + INT8 12）を、1コマンドでダウンロード → 変換 → INT8 量子化 → models.json 生成まで実行する。
+21 ファミリー・206 モデル（FP32 194 + INT8 12）を、1コマンドでダウンロード → 変換 → INT8 量子化 → models.json 生成まで実行する。
 
 ## クイックスタート
 
@@ -66,6 +66,7 @@ output/
 ├── fdncnn/
 ├── ffdnet/
 ├── fsrcnnx/
+├── ravu/
 ├── realcugan/
 ├── realesrgan/
 ├── srmd/
@@ -93,17 +94,21 @@ output/
 | fdncnn | PyTorch .pth | 4 | - | 4 |
 | ffdnet | PyTorch .pth | 4 | - | 4 |
 | fsrcnnx | C++ header | 4 | - | 4 |
+| ravu | Python weights | 21 | - | 21 |
 | realcugan | PyTorch .pth | 12 | 2 | 14 |
 | realesrgan | PyTorch .pth | 8 | 2 | 10 |
 | srmd | PyTorch .pth | 6 | - | 6 |
 | waifu2x | JSON weights | 34 | - | 34 |
 | websr | JSON weights | 9 | - | 9 |
-| **合計** | | **173** | **12** | **185** |
+| **合計** | | **194** | **12** | **206** |
 
 ## 変換ソース種別
 
 ### GLSL シェーダ解析
 Anime4K, ACNet, ARNet, FSRCNNX のシェーダからウェイトを抽出し ONNX グラフを構築。
+
+### Python ウェイト (RAVU)
+bjin/mpv-prescalers の学習済み重み（Python形式）から `torch.onnx.export` で変換。
 
 ### PyTorch .pth ウェイト
 KAIR, Real-ESRGAN, Real-CUGAN, BSRGAN 等の学習済みモデルを `torch.onnx.export` で変換。
@@ -138,14 +143,15 @@ nncf (Neural Network Compression Framework) の Post-Training Quantization で F
 | `setup_env.sh` | Python venv セットアップ (Linux) |
 | `setup_env.bat` | Python venv セットアップ (Windows) |
 | `quantize_int8.py` | nncf による INT8 量子化 |
-| `export_*.py` | 各ファミリーの FP32 ONNX 変換スクリプト (18本) |
+| `export_*.py` | 各ファミリーの FP32 ONNX 変換スクリプト (19本) |
+| `convert_ravu_*.py` | RAVU 変換スクリプト (4本、export_ravu.py から呼出) |
 | `extract_anime4k_upscale_gan_glsl.py` | Anime4K GAN GLSL 解析ヘルパー |
 | `requirements.txt` | Python 依存パッケージ |
 
 ## ライセンス
 
 各モデルのライセンスは元リポジトリに準じる。
-各 `onnx/<ファミリー>/` ディレクトリに `LICENSE.txt` を配置し、由来を詳述している。
+各 `<ファミリー>/` ディレクトリに `LICENSE.txt` を配置し、由来を詳述している。
 
 | ファミリー | ライセンス | 著作者 |
 |-----------|-----------|--------|
@@ -155,6 +161,7 @@ nncf (Neural Network Compression Framework) の Post-Training Quantization で F
 | BSRGAN | MIT (KAIR) / Apache-2.0 (BSRGANリポジトリ) | Kai Zhang |
 | DnCNN, DPSR, DRUNet, ESRGAN, FDnCNN, FFDNet, SRMD | MIT | Kai Zhang (KAIR) |
 | FSRCNNX | **GPL-3.0** (igvの学習済み重み) | igv, nessotrin, TianZerL |
+| RAVU | **LGPL-3.0** (学習済み重み) | bjin |
 | Real-CUGAN | MIT | bilibili |
 | Real-ESRGAN | BSD-3-Clause | Xintao Wang |
 | waifu2x | MIT | nagadomi, nihui (ncnnトポロジー) |
