@@ -1,0 +1,38 @@
+EDSR
+====
+
+Source:
+- Paper: B. Lim, S. Son, H. Kim, S. Nah, K. M. Lee, "Enhanced Deep Residual
+  Networks for Single Image Super-Resolution", CVPRW 2017.
+- Code and pretrained weights: https://github.com/sanghyun-son/EDSR-PyTorch
+- Pretrained baseline weights:
+  - edsr_baseline_x2-1bc95232.pt
+  - edsr_baseline_x3-abf2a44e.pt
+  - edsr_baseline_x4-6b446fab.pt
+
+The converted ONNX models are derived from the official MIT-licensed EDSR
+baseline pretrained weights. The conversion script wraps the network so QSVEnc /
+NVEnc / VCEEnc --vpp-onnx can use the models as 3-channel RGB super-resolution
+models with [0,1] input and output.
+
+MIT License
+
+Copyright (c) 2018 Sanghyun Son
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.

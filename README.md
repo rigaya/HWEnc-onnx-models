@@ -4,7 +4,7 @@
 
 Build tools for ONNX models used by the `--vpp-onnx` filter in QSVEnc / NVEnc / VCEEnc.
 
-Generates 206 models (194 FP32 + 12 INT8) across 21 model families with a single command: download → convert → INT8 quantize → models.json.
+Generates 209 models (197 FP32 + 12 INT8) across 22 model families with a single command: download → convert → INT8 quantize → models.json.
 
 ## Quick Start
 
@@ -64,6 +64,7 @@ output/
 ├── dncnn/
 ├── dpsr/
 ├── drunet/
+├── edsr/
 ├── esrgan/
 ├── fdncnn/
 ├── ffdnet/
@@ -92,6 +93,7 @@ output/
 | dncnn | PyTorch .pth | 6 | - | 6 |
 | dpsr | PyTorch .pth | 4 | 1 | 5 |
 | drunet | PyTorch .pth | 4 | 1 | 5 |
+| edsr | PyTorch .pth | 3 | - | 3 |
 | esrgan | PyTorch .pth | 5 | - | 5 |
 | fdncnn | PyTorch .pth | 4 | - | 4 |
 | ffdnet | PyTorch .pth | 4 | - | 4 |
@@ -102,7 +104,7 @@ output/
 | srmd | PyTorch .pth | 6 | - | 6 |
 | waifu2x | JSON weights | 34 | - | 34 |
 | websr | JSON weights | 9 | - | 9 |
-| **Total** | | **194** | **12** | **206** |
+| **Total** | | **197** | **12** | **209** |
 
 ## Conversion Source Types
 
@@ -113,7 +115,7 @@ Extracts weights from Anime4K, ACNet, ARNet, and FSRCNNX shaders and builds ONNX
 Converts trained weights from bjin/mpv-prescalers (Python format) via `torch.onnx.export`.
 
 ### PyTorch .pth Weights
-Converts pretrained models from KAIR, Real-ESRGAN, Real-CUGAN, BSRGAN, etc. via `torch.onnx.export`.
+Converts pretrained models from KAIR, EDSR, Real-ESRGAN, Real-CUGAN, BSRGAN, etc. via `torch.onnx.export`.
 
 ### JSON Weights
 Builds ONNX graphs from waifu2x and websr JSON weight files.
@@ -146,6 +148,7 @@ Generates INT8 ONNX from FP32 ONNX using nncf (Neural Network Compression Framew
 | `setup_env.bat` | Python venv setup (Windows) |
 | `quantize_int8.py` | INT8 quantization via nncf |
 | `export_*.py` | Per-family FP32 ONNX conversion scripts (19 files) |
+| `convert_edsr.py` | EDSR conversion script |
 | `convert_ravu_*.py` | RAVU conversion scripts (4 files, called by export_ravu.py) |
 | `extract_anime4k_upscale_gan_glsl.py` | Anime4K GAN GLSL parsing helper |
 | `requirements.txt` | Python dependencies |
@@ -162,6 +165,7 @@ A `LICENSE.txt` is placed in each `<family>/` directory with full provenance det
 | ArtCNN | MIT | Joao Chrisostomo |
 | BSRGAN | MIT (KAIR) / Apache-2.0 (BSRGAN repo) | Kai Zhang |
 | DnCNN, DPSR, DRUNet, ESRGAN, FDnCNN, FFDNet, SRMD | MIT | Kai Zhang (KAIR) |
+| EDSR | MIT | Sanghyun Son |
 | FSRCNNX | **GPL-3.0** (igv's trained weights) | igv, nessotrin, TianZerL |
 | RAVU | **LGPL-3.0** (trained weights) | bjin |
 | Real-CUGAN | MIT | bilibili |

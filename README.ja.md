@@ -2,7 +2,7 @@
 
 QSVEnc / NVEnc / VCEEnc の `--vpp-onnx` フィルタで使用する ONNX モデルのビルドツール群。
 
-21 ファミリー・206 モデル（FP32 194 + INT8 12）を、1コマンドでダウンロード → 変換 → INT8 量子化 → models.json 生成まで実行する。
+22 ファミリー・209 モデル（FP32 197 + INT8 12）を、1コマンドでダウンロード → 変換 → INT8 量子化 → models.json 生成まで実行する。
 
 ## クイックスタート
 
@@ -62,6 +62,7 @@ output/
 ├── dncnn/
 ├── dpsr/
 ├── drunet/
+├── edsr/
 ├── esrgan/
 ├── fdncnn/
 ├── ffdnet/
@@ -90,6 +91,7 @@ output/
 | dncnn | PyTorch .pth | 6 | - | 6 |
 | dpsr | PyTorch .pth | 4 | 1 | 5 |
 | drunet | PyTorch .pth | 4 | 1 | 5 |
+| edsr | PyTorch .pth | 3 | - | 3 |
 | esrgan | PyTorch .pth | 5 | - | 5 |
 | fdncnn | PyTorch .pth | 4 | - | 4 |
 | ffdnet | PyTorch .pth | 4 | - | 4 |
@@ -100,7 +102,7 @@ output/
 | srmd | PyTorch .pth | 6 | - | 6 |
 | waifu2x | JSON weights | 34 | - | 34 |
 | websr | JSON weights | 9 | - | 9 |
-| **合計** | | **194** | **12** | **206** |
+| **合計** | | **197** | **12** | **209** |
 
 ## 変換ソース種別
 
@@ -111,7 +113,7 @@ Anime4K, ACNet, ARNet, FSRCNNX のシェーダからウェイトを抽出し ONN
 bjin/mpv-prescalers の学習済み重み（Python形式）から `torch.onnx.export` で変換。
 
 ### PyTorch .pth ウェイト
-KAIR, Real-ESRGAN, Real-CUGAN, BSRGAN 等の学習済みモデルを `torch.onnx.export` で変換。
+KAIR, EDSR, Real-ESRGAN, Real-CUGAN, BSRGAN 等の学習済みモデルを `torch.onnx.export` で変換。
 
 ### JSON ウェイト
 waifu2x, websr の JSON 形式ウェイトから ONNX グラフを構築。
@@ -144,6 +146,7 @@ nncf (Neural Network Compression Framework) の Post-Training Quantization で F
 | `setup_env.bat` | Python venv セットアップ (Windows) |
 | `quantize_int8.py` | nncf による INT8 量子化 |
 | `export_*.py` | 各ファミリーの FP32 ONNX 変換スクリプト (19本) |
+| `convert_edsr.py` | EDSR 変換スクリプト |
 | `convert_ravu_*.py` | RAVU 変換スクリプト (4本、export_ravu.py から呼出) |
 | `extract_anime4k_upscale_gan_glsl.py` | Anime4K GAN GLSL 解析ヘルパー |
 | `requirements.txt` | Python 依存パッケージ |
@@ -160,6 +163,7 @@ nncf (Neural Network Compression Framework) の Post-Training Quantization で F
 | ArtCNN | MIT | Joao Chrisostomo |
 | BSRGAN | MIT (KAIR) / Apache-2.0 (BSRGANリポジトリ) | Kai Zhang |
 | DnCNN, DPSR, DRUNet, ESRGAN, FDnCNN, FFDNet, SRMD | MIT | Kai Zhang (KAIR) |
+| EDSR | MIT | Sanghyun Son |
 | FSRCNNX | **GPL-3.0** (igvの学習済み重み) | igv, nessotrin, TianZerL |
 | RAVU | **LGPL-3.0** (学習済み重み) | bjin |
 | Real-CUGAN | MIT | bilibili |

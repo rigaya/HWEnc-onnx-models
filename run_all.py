@@ -84,6 +84,12 @@ REALESRGAN_RELEASES = [
     ("https://github.com/xinntao/Real-ESRGAN/releases/download/v0.1.1/RealESRNet_x4plus.pth", "_work/realesrgan/RealESRNet_x4plus.pth"),
 ]
 
+EDSR_WEIGHTS = [
+    ("https://cv.snu.ac.kr/research/EDSR/models/edsr_baseline_x2-1bc95232.pt", "_work/edsr/edsr_baseline_x2-1bc95232.pt"),
+    ("https://cv.snu.ac.kr/research/EDSR/models/edsr_baseline_x3-abf2a44e.pt", "_work/edsr/edsr_baseline_x3-abf2a44e.pt"),
+    ("https://cv.snu.ac.kr/research/EDSR/models/edsr_baseline_x4-6b446fab.pt", "_work/edsr/edsr_baseline_x4-6b446fab.pt"),
+]
+
 KAIR_MODELS = [
     # export_kair_rrdb.py
     "ESRGAN.pth", "RealSR_DPED.pth", "RealSR_JPEG.pth", "FSSR_DPED.pth", "FSSR_JPEG.pth",
@@ -133,6 +139,9 @@ CONVERT_COMMANDS = [
     ("export_kair_rrdb.py", ["--repo-root", "{repos}/KAIR", "--weights-dir", "{repos}/KAIR/model_zoo", "--output", "{out}/esrgan"]),
     ("export_srmd.py", ["--repo-root", "{repos}/KAIR", "--weights-dir", "{repos}/KAIR/model_zoo", "--output", "{out}/srmd"]),
     ("export_realcugan.py", ["--repo-root", "{repos}/Real-CUGAN/Real-CUGAN", "--weights-dir", "{work}/realcugan_weights", "--output", "{out}/realcugan"]),
+    ("convert_edsr.py", ["--scale", "2", "--weights", "{work}/edsr/edsr_baseline_x2-1bc95232.pt", "--output", "{out}/edsr/edsr_baseline_x2.onnx"]),
+    ("convert_edsr.py", ["--scale", "3", "--weights", "{work}/edsr/edsr_baseline_x3-abf2a44e.pt", "--output", "{out}/edsr/edsr_baseline_x3.onnx"]),
+    ("convert_edsr.py", ["--scale", "4", "--weights", "{work}/edsr/edsr_baseline_x4-6b446fab.pt", "--output", "{out}/edsr/edsr_baseline_x4.onnx"]),
 
     # --- JSON based ---
     ("export_waifu2x.py", ["--models-dir", "{repos}/waifu2x/models", "--output", "{out}/waifu2x"]),
@@ -265,6 +274,10 @@ def download_phase(output: Path, dry_run: bool) -> None:
 
     print("  Downloading pretrained weights from GitHub Releases...")
     for url, rel_dest in REALESRGAN_RELEASES:
+        download_file(url, output / rel_dest, dry_run)
+
+    print("  Downloading EDSR baseline weights...")
+    for url, rel_dest in EDSR_WEIGHTS:
         download_file(url, output / rel_dest, dry_run)
 
     for name in KAIR_MODELS:
@@ -501,6 +514,7 @@ LICENSE_MAP = {
     "dpsr": "dpsr.txt",
     "drunet": "drunet.txt",
     "esrgan": "esrgan.txt",
+    "edsr": "edsr.txt",
     "fdncnn": "fdncnn.txt",
     "ffdnet": "ffdnet.txt",
     "fsrcnnx": "fsrcnnx.txt",
