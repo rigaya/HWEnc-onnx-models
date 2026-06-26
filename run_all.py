@@ -150,6 +150,7 @@ CONVERT_COMMANDS = [
 
     # --- RAVU (trained weights from mpv-prescalers, LGPL-3.0) ---
     ("export_ravu.py", ["--repo-root", "{repos}/mpv-prescalers", "--output", "{out}/ravu"]),
+    ("export_nnedi3.py", ["--repo-root", "{repos}/mpv-prescalers", "--output", "{out}/nnedi3"]),
 ]
 
 
@@ -518,6 +519,7 @@ LICENSE_MAP = {
     "fdncnn": "fdncnn.txt",
     "ffdnet": "ffdnet.txt",
     "fsrcnnx": "fsrcnnx.txt",
+    "nnedi3": "nnedi3.txt",
     "ravu": "ravu.txt",
     "realcugan": "realcugan.txt",
     "realesrgan": "realesrgan.txt",
@@ -574,7 +576,10 @@ def generate_models_json(output: Path, dry_run: bool) -> None:
             duplicates += 1
             print(f"  [DUP] key '{key}' already registered, skipping {rel}")
             continue
-        models[key] = {"path": str(rel.as_posix())}
+        entry = {"path": str(rel.as_posix())}
+        if rel.parts[0] == "nnedi3":
+            entry["fp32"] = True
+        models[key] = entry
 
     manifest = {"version": 1, "models": models}
     try:

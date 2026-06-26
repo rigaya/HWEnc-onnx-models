@@ -1,0 +1,25 @@
+NNEDI3 ONNX
+===========
+
+License:
+- LGPL-3.0, the same license as the upstream mpv-prescalers project.
+
+Source:
+- NNEDI3 prescaler shaders by bjin.
+- Upstream: https://github.com/bjin/mpv-prescalers
+- Weights: weights/nnedi3_weights.bin from the source branch.
+
+The ONNX models named nnedi3_nns{16,32,64,128,256}_win8x{4,6}.onnx are
+converted derivatives of bjin's NNEDI3 weights. They are luma 2x
+super-resolution models for QSVEnc/NVEnc/VCEEnc --vpp-onnx.
+
+NNEDI3 normalizes each local window by 1/std inside a softmax
+mixture-of-experts predictor. This is numerically unstable in fp16, for the
+same reason mpv runs the shader in fp32. These models should be run with fp32
+inference. The generated models.json marks the NNEDI3 entries with
+"fp32": true so QSVEnc can automatically select fp32 when the model is used by
+registered short name.
+
+This file summarizes provenance. The full LGPL-3.0 license text is available
+from the upstream project and the Free Software Foundation:
+https://www.gnu.org/licenses/lgpl-3.0.html
