@@ -16,6 +16,7 @@ See ../ACKNOWLEDGMENTS.md.
 import os, json, argparse, warnings
 warnings.filterwarnings("ignore")
 import numpy as np, torch, torch.nn as nn, torch.nn.functional as F
+from onnx_export_common import export_onnx
 
 VARIANTS_S = {  # output name suffix -> json
     "s_an": "cnn-2x-s-an.json", "s_rl": "cnn-2x-s-rl.json", "s_3d": "cnn-2x-s-3d.json",
@@ -237,7 +238,7 @@ def _export(net, suffix, json_name, out_dir):
     with torch.no_grad():
         o = net(dummy)
     out = os.path.join(out_dir, f"websr_cnn2x_{suffix}.onnx")
-    torch.onnx.export(net, dummy, out, do_constant_folding=True,
+    export_onnx(net, dummy, out, do_constant_folding=True,
         input_names=['input'], output_names=['output'],
         dynamic_axes={'input': {0:'batch',2:'height',3:'width'}, 'output': {0:'batch',2:'height',3:'width'}})
     import onnx; onnx.checker.check_model(onnx.load(out))

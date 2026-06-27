@@ -11,6 +11,7 @@ its RGB+noise tier lands (see ../PLAN.md). The ONNX is valid and exported now.
 import os, sys, re, argparse, warnings
 warnings.filterwarnings("ignore")
 import torch
+from onnx_export_common import export_onnx
 
 MODELS = ["dpsr_x2.pth", "dpsr_x3.pth", "dpsr_x4.pth", "dpsr_x4_gan.pth"]
 
@@ -25,7 +26,7 @@ def export_one(fname, weights_dir, out_dir):
     net.load_state_dict(state, strict=False); net.eval()
     dummy = torch.randn(1, 4, 64, 64)
     out = os.path.join(out_dir, os.path.splitext(fname)[0] + ".onnx")
-    torch.onnx.export(net, dummy, out, do_constant_folding=True,
+    export_onnx(net, dummy, out, do_constant_folding=True,
         input_names=['input'], output_names=['output'],
         dynamic_axes={'input': {0:'batch',2:'height',3:'width'}, 'output': {0:'batch',2:'height',3:'width'}})
     import onnx; onnx.checker.check_model(onnx.load(out))

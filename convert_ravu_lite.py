@@ -4,6 +4,7 @@ Self-verifies: an independent numpy reference vs the exported ONNX.
 """
 import argparse, sys, math, numpy as np, torch, torch.nn as nn
 import onnxruntime as ort
+from onnx_export_common import export_onnx
 
 EPS = 1.192092896e-7
 
@@ -134,7 +135,7 @@ def convert(radius, upstream, output_dir):
     ref = ravu_ref(img.astype(np.float64), p, radius)
     print(f"[r{radius}] torch-vs-numpyref max abs diff: {np.abs(t_out-ref).max():.2e}")
     onnx_path = f"{output_dir}/ravu_lite_r{radius}.onnx"
-    torch.onnx.export(mod, torch.tensor(img)[None,None], onnx_path,
+    export_onnx(mod, torch.tensor(img)[None,None], onnx_path,
                       input_names=['input'], output_names=['output'],
                       dynamic_axes={'input':{2:'h',3:'w'}, 'output':{2:'h2',3:'w2'}},
                       do_constant_folding=True)

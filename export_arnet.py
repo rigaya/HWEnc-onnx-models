@@ -17,6 +17,7 @@ See ../ACKNOWLEDGMENTS.md and ../VERIFICATION.md.
 import os, re, glob, argparse, warnings
 warnings.filterwarnings("ignore")
 import numpy as np, torch, torch.nn as nn, torch.nn.functional as F
+from onnx_export_common import export_onnx
 
 TIER = {"f8b8": "s", "f8b16": "m", "f8b32": "l", "f8b64": "xl"}
 
@@ -111,7 +112,7 @@ def export_one(glsl_path, out_dir):
         o = net(dummy)
     assert tuple(o.shape[1:]) == (1, 128, 128), f"{name}: out {o.shape}"
     out = os.path.join(out_dir, out_name + ".onnx")
-    torch.onnx.export(net, dummy, out, do_constant_folding=True,
+    export_onnx(net, dummy, out, do_constant_folding=True,
         input_names=['input'], output_names=['output'],
         dynamic_axes={'input': {0:'batch',2:'height',3:'width'}, 'output': {0:'batch',2:'height',3:'width'}})
     import onnx; onnx.checker.check_model(onnx.load(out))

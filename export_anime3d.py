@@ -10,6 +10,7 @@ Convs replicate-pad (GLSL clamp). Anime4K is MIT (bloc97). See ../ACKNOWLEDGMENT
 import os, re, argparse, warnings
 warnings.filterwarnings("ignore")
 import numpy as np, torch, torch.nn as nn, torch.nn.functional as F
+from onnx_export_common import export_onnx
 VARIANTS = {
     "x2":    "Anime4K_3DGraphics_Upscale_x2_US.glsl",
     "aa_x2": "Anime4K_3DGraphics_AA_Upscale_x2_US.glsl",
@@ -94,7 +95,7 @@ def export_one(suffix, glsl_name, glsl_dir, out_dir):
     with torch.no_grad():
         o = net(dummy)
     out = os.path.join(out_dir, f"anime3d_{suffix}.onnx")
-    torch.onnx.export(net, dummy, out, do_constant_folding=True,
+    export_onnx(net, dummy, out, do_constant_folding=True,
         input_names=['input'], output_names=['output'],
         dynamic_axes={'input': {0:'batch',2:'height',3:'width'}, 'output': {0:'batch',2:'height',3:'width'}})
     import onnx; onnx.checker.check_model(onnx.load(out))

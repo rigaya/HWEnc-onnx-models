@@ -23,6 +23,7 @@ KAIR is MIT (Kai Zhang). See ../ACKNOWLEDGMENTS.md.
 import os, sys, argparse, warnings
 warnings.filterwarnings("ignore")
 import torch, torch.nn as nn
+from onnx_export_common import export_onnx
 
 def load_sd(fname, weights_dir):
     sd = torch.load(os.path.join(weights_dir, fname), map_location='cpu', weights_only=True)
@@ -54,7 +55,7 @@ def export_dncnn_like(fname, family, weights_dir, out_dir):
     net.eval()
     dummy = torch.rand(1, in_nc, 64, 64)
     out = os.path.join(out_dir, os.path.splitext(fname)[0] + ".onnx")
-    torch.onnx.export(net, dummy, out, do_constant_folding=True,
+    export_onnx(net, dummy, out, do_constant_folding=True,
         input_names=['input'], output_names=['output'],
         dynamic_axes={'input': {0:'batch',2:'height',3:'width'}, 'output': {0:'batch',2:'height',3:'width'}})
     import onnx; onnx.checker.check_model(onnx.load(out))
@@ -94,7 +95,7 @@ def export_ffdnet(fname, weights_dir, out_dir):
     with torch.no_grad():
         o = wrap(dummy)
     out = os.path.join(out_dir, os.path.splitext(fname)[0] + ".onnx")
-    torch.onnx.export(wrap, dummy, out, do_constant_folding=True,
+    export_onnx(wrap, dummy, out, do_constant_folding=True,
         input_names=['input'], output_names=['output'],
         dynamic_axes={'input': {0:'batch',2:'height',3:'width'}, 'output': {0:'batch',2:'height',3:'width'}})
     import onnx; onnx.checker.check_model(onnx.load(out))

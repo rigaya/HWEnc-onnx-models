@@ -13,6 +13,7 @@ Anime4K is MIT (bloc97). See ../ACKNOWLEDGMENTS.md.
 import os, re, argparse, warnings
 warnings.filterwarnings("ignore")
 import numpy as np, torch, torch.nn as nn, torch.nn.functional as F
+from onnx_export_common import export_onnx
 
 
 # tier suffix -> (glsl file, scale, tier)
@@ -138,7 +139,7 @@ def export_S(suffix, glsl_name, glsl_dir, out_dir):
     with torch.no_grad():
         o = net(dummy)
     out = os.path.join(out_dir, f"anime4k_upscale_cnn_{suffix}.onnx")
-    torch.onnx.export(net, dummy, out, do_constant_folding=True,
+    export_onnx(net, dummy, out, do_constant_folding=True,
         input_names=['input'], output_names=['output'],
         dynamic_axes={'input': {0:'batch',2:'height',3:'width'}, 'output': {0:'batch',2:'height',3:'width'}})
     import onnx; onnx.checker.check_model(onnx.load(out))
@@ -306,7 +307,7 @@ def _save(net, suffix, glsl_name, out_dir):
     with torch.no_grad():
         o = net(dummy)
     out = os.path.join(out_dir, f"anime4k_upscale_cnn_{suffix}.onnx")
-    torch.onnx.export(net, dummy, out, do_constant_folding=True,
+    export_onnx(net, dummy, out, do_constant_folding=True,
         input_names=['input'], output_names=['output'],
         dynamic_axes={'input': {0:'batch',2:'height',3:'width'}, 'output': {0:'batch',2:'height',3:'width'}})
     import onnx; onnx.checker.check_model(onnx.load(out))
@@ -332,7 +333,7 @@ def export_VL(suffix, glsl_name, glsl_dir, out_dir):
     with torch.no_grad():
         o = net(dummy)
     out = os.path.join(out_dir, f"anime4k_upscale_cnn_{suffix}.onnx")
-    torch.onnx.export(net, dummy, out, do_constant_folding=True,
+    export_onnx(net, dummy, out, do_constant_folding=True,
         input_names=['input'], output_names=['output'],
         dynamic_axes={'input': {0:'batch',2:'height',3:'width'}, 'output': {0:'batch',2:'height',3:'width'}})
     import onnx; onnx.checker.check_model(onnx.load(out))

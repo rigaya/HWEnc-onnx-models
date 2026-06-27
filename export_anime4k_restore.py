@@ -17,6 +17,7 @@ import numpy as np, torch, torch.nn as nn, torch.nn.functional as F
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from export_anime4k_upscale_cnn import (parse_passes, head_OIHW, mid_dual_OIHW,
     mid_triple_OIHW, MAT4_RE, MAT4_BARE_RE, GO_UL, floats16)
+from onnx_export_common import export_onnx
 OUTBIAS_RE = re.compile(r"result(?:\.\w+)?\s*\+=\s*vec[34]\(\s*([\d\.\-e\+\,\s]+?)\s*\)\s*;")
 
 L_VARIANTS  = {"l": "Anime4K_Restore_CNN_L.glsl", "soft_l": "Anime4K_Restore_CNN_Soft_L.glsl"}
@@ -147,7 +148,7 @@ def _save(net, suffix, glsl, out_dir):
         o = net(dummy)
     assert tuple(o.shape[1:]) == (3, 64, 64), f"{suffix}: scale!=1 ({o.shape})"
     out = os.path.join(out_dir, f"anime4k_restore_cnn_{suffix}.onnx")
-    torch.onnx.export(net, dummy, out, do_constant_folding=True,
+    export_onnx(net, dummy, out, do_constant_folding=True,
         input_names=['input'], output_names=['output'],
         dynamic_axes={'input': {0:'batch',2:'height',3:'width'}, 'output': {0:'batch',2:'height',3:'width'}})
     import onnx; onnx.checker.check_model(onnx.load(out))

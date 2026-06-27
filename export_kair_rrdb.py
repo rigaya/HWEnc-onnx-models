@@ -11,6 +11,7 @@ import os, sys, argparse, warnings
 warnings.filterwarnings("ignore")
 
 import torch
+from onnx_export_common import export_onnx
 
 # filename -> scale factor (all 23-block 4x RRDBNet)
 MODELS = {
@@ -36,7 +37,7 @@ def export_one(fname, sf, weights_dir, out_dir):
     net.eval()
     dummy = torch.rand(1, 3, 96, 96)
     out = os.path.join(out_dir, os.path.splitext(fname)[0] + ".onnx")
-    torch.onnx.export(net, dummy, out, do_constant_folding=True,
+    export_onnx(net, dummy, out, do_constant_folding=True,
         input_names=['input'], output_names=['output'],
         dynamic_axes={'input': {0:'batch',2:'height',3:'width'}, 'output': {0:'batch',2:'height',3:'width'}})
     import onnx; onnx.checker.check_model(onnx.load(out))

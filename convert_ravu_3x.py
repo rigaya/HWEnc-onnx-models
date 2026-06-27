@@ -17,6 +17,7 @@ Self-verifies an independent numpy reference vs the exported ONNX.
 """
 import argparse, sys, math, numpy as np, torch, torch.nn as nn
 import onnxruntime as ort
+from onnx_export_common import export_onnx
 
 EPS = 1.192092896e-7
 
@@ -177,7 +178,7 @@ def convert(radius, upstream, output_dir):
     with torch.no_grad(): co = mod(torch.tensor(const)[None,None]).numpy()[0,0]
     print(f"[3x r{radius}] constant-image max dev from 0.37: {np.abs(co-0.37).max():.2e}")
     path = f"{output_dir}/ravu_3x_r{radius}.onnx"
-    torch.onnx.export(mod, torch.tensor(img)[None,None], path,
+    export_onnx(mod, torch.tensor(img)[None,None], path,
                       input_names=['input'], output_names=['output'],
                       dynamic_axes={'input':{2:'h',3:'w'}, 'output':{2:'h3',3:'w3'}},
                       do_constant_folding=True)

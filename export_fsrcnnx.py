@@ -17,6 +17,7 @@ igv/FSRCNN-TensorFlow (GPL-3.0). See licenses/fsrcnnx.txt for details.
 import os, re, argparse, warnings
 warnings.filterwarnings("ignore")
 import numpy as np, torch, torch.nn as nn, torch.nn.functional as F
+from onnx_export_common import export_onnx
 
 VARIANTS = {  # out suffix -> (array prefix, F)
     "s":    ("FSRCNNX_F8_NHWC",               8),
@@ -86,7 +87,7 @@ def export_one(suffix, prefix, Fw, text, out_dir):
         o = net(dummy)
     assert tuple(o.shape[1:]) == (1, 128, 128), f"{suffix}: out {o.shape}"
     out = os.path.join(out_dir, f"fsrcnnx_{suffix}.onnx")
-    torch.onnx.export(net, dummy, out, do_constant_folding=True,
+    export_onnx(net, dummy, out, do_constant_folding=True,
         input_names=['input'], output_names=['output'],
         dynamic_axes={'input': {0:'batch',2:'height',3:'width'}, 'output': {0:'batch',2:'height',3:'width'}})
     import onnx; onnx.checker.check_model(onnx.load(out))

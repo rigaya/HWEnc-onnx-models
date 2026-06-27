@@ -14,6 +14,7 @@ waifu2x is MIT (nagadomi). See ../ACKNOWLEDGMENTS.md.
 import os, glob, json, argparse, warnings
 warnings.filterwarnings("ignore")
 import numpy as np, torch, torch.nn as nn, torch.nn.functional as F
+from onnx_export_common import export_onnx
 
 ACT = {0: None, 1: 'relu', 2: 'leaky', 4: 'sigmoid'}
 
@@ -113,7 +114,7 @@ def export_one(param_path, json_dir, out_dir):
         print(f"  ?? {base}: output {tuple(out.shape[2:])} != {64*scale}x{64*scale}");
     name = base.replace("_model", "").replace("scale2.0x", "scale2x")
     out_path = os.path.join(out_dir, f"waifu2x_cunet_{name}.onnx" if name else "waifu2x_cunet.onnx")
-    torch.onnx.export(net, dummy, out_path, do_constant_folding=True,
+    export_onnx(net, dummy, out_path, do_constant_folding=True,
         input_names=['input'], output_names=['output'],
         dynamic_axes={'input': {0:'batch',2:'height',3:'width'}, 'output': {0:'batch',2:'height',3:'width'}})
     import onnx; onnx.checker.check_model(onnx.load(out_path))

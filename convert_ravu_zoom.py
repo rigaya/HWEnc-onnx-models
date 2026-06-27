@@ -15,6 +15,7 @@ Builds both PLAIN and ANTI-RINGING variants.
 """
 import argparse, sys, math, numpy as np, torch, torch.nn as nn
 import onnxruntime as ort
+from onnx_export_common import export_onnx
 
 EPS = 1.192092896e-7
 
@@ -260,7 +261,7 @@ def convert(radius, ratio, ar, upstream, output_dir):
     print(f"[zoom {tag}] constant-image max dev from 0.42: {np.abs(co-0.42).max():.2e}")
     suffix = "_ar" if ar else ""
     path = f"{output_dir}/ravu_zoom_{ratio}x_r{radius}{suffix}.onnx"
-    torch.onnx.export(mod, torch.tensor(img)[None,None], path,
+    export_onnx(mod, torch.tensor(img)[None,None], path,
                       input_names=['input'], output_names=['output'],
                       dynamic_axes={'input':{2:'h',3:'w'}, 'output':{2:'hk',3:'wk'}},
                       do_constant_folding=True)

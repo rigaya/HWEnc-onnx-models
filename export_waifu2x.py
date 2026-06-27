@@ -18,6 +18,7 @@ waifu2x is MIT (nagadomi). See ../ACKNOWLEDGMENTS.md.
 import os, glob, json, argparse, warnings
 warnings.filterwarnings("ignore")
 import torch, torch.nn as nn, torch.nn.functional as F
+from onnx_export_common import export_onnx
 
 PAD = 7  # waifu2x offset: makes vgg_7 output 1x and upconv_7 output 2x exactly
 
@@ -67,7 +68,7 @@ def export_arch(arch, models_root, out_dir):
         with torch.no_grad():
             out = net(dummy)
         out_path = os.path.join(out_dir, clean_name(arch, f))
-        torch.onnx.export(net, dummy, out_path, do_constant_folding=True,
+        export_onnx(net, dummy, out_path, do_constant_folding=True,
             input_names=['input'], output_names=['output'],
             dynamic_axes={'input': {0:'batch',2:'height',3:'width'}, 'output': {0:'batch',2:'height',3:'width'}})
         import onnx; onnx.checker.check_model(onnx.load(out_path))

@@ -13,6 +13,7 @@ import os, sys, argparse, warnings
 warnings.filterwarnings("ignore")
 
 import torch
+from onnx_export_common import export_onnx
 
 MODELS = ["drunet_color.pth", "drunet_deblocking_color.pth",
           "drunet_gray.pth", "drunet_deblocking_grayscale.pth"]
@@ -29,7 +30,7 @@ def export_one(fname, weights_dir, out_dir):
     net.load_state_dict(state, strict=True); net.eval()
     dummy = torch.randn(1, in_nc, 64, 64)
     out = os.path.join(out_dir, os.path.splitext(fname)[0] + ".onnx")
-    torch.onnx.export(net, dummy, out, do_constant_folding=True,
+    export_onnx(net, dummy, out, do_constant_folding=True,
         input_names=['input'], output_names=['output'],
         dynamic_axes={'input': {0:'batch',2:'height',3:'width'}, 'output': {0:'batch',2:'height',3:'width'}})
     import onnx; onnx.checker.check_model(onnx.load(out))

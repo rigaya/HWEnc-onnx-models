@@ -6,6 +6,7 @@ from pathlib import Path
 import numpy as np
 import torch
 import torch.nn as nn
+from onnx_export_common import export_onnx
 
 
 def default_conv(in_ch, out_ch, k, bias=True):
@@ -113,7 +114,7 @@ def main():
     model = EDSRNorm(net).eval()
 
     dummy = torch.rand(1, 3, 32, 48)
-    torch.onnx.export(
+    export_onnx(
         model, dummy, str(out_path),
         input_names=["input"], output_names=["output"],
         dynamic_axes={"input": {0: "N", 2: "H", 3: "W"},

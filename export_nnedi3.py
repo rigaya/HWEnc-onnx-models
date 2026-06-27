@@ -12,6 +12,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 import onnxruntime as ort
+from onnx_export_common import export_onnx
 
 UP = r"upstream"  # path to a clone of bjin/mpv-prescalers (source branch); has weights/nnedi3_weights.bin
 EPS = 1.192092896e-7
@@ -144,7 +145,7 @@ def convert(nns, W, H, output_dir, opset):
     print(f"[nns{nns} {W}x{H}] torch-vs-numpyref max diff: {np.abs(t-ref).max():.2e}")
     output_dir.mkdir(parents=True, exist_ok=True)
     path = output_dir / f"nnedi3_nns{nns}_win{W}x{H}.onnx"
-    torch.onnx.export(mod, torch.tensor(img)[None,None], str(path),
+    export_onnx(mod, torch.tensor(img)[None,None], str(path),
                       input_names=['input'],output_names=['output'],
                       dynamic_axes={'input':{2:'h',3:'w'},'output':{2:'h2',3:'w2'}}, opset_version=opset)
     s=ort.InferenceSession(str(path),providers=['CPUExecutionProvider'])

@@ -14,6 +14,7 @@ Real-ESRGAN is BSD-3-Clause (Xintao Wang). See ../ACKNOWLEDGMENTS.md.
 import os, time, argparse, warnings
 warnings.filterwarnings("ignore")
 import torch, torch.nn as nn, torch.nn.functional as F
+from onnx_export_common import export_onnx
 
 # ---- edit these two paths if needed ----
 # -----------------------------------------
@@ -121,7 +122,7 @@ def export_one(fname, builder, models_dir, out_dir):
         print(f"  SKIP {fname}: state_dict mismatch ({e})"); return False
     dummy = torch.randn(1, 3, 128, 128)
     out = os.path.join(out_dir, os.path.splitext(fname)[0].replace('-', '_') + ".onnx")
-    torch.onnx.export(net, dummy, out, do_constant_folding=True,
+    export_onnx(net, dummy, out, do_constant_folding=True,
         input_names=['input'], output_names=['output'],
         dynamic_axes={'input': {0:'batch',2:'height',3:'width'}, 'output': {0:'batch',2:'height',3:'width'}})
     import onnx; onnx.checker.check_model(onnx.load(out))

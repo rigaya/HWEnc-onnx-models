@@ -20,6 +20,7 @@ import numpy as np, torch, torch.nn as nn, torch.nn.functional as F
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from extract_anime4k_upscale_gan_glsl import (collect_terms, parse_g_mapping,
     parse_bias, parse_glsl_passes, GO_DEFINE_RE)
+from onnx_export_common import export_onnx
 FILES = {  # out suffix -> glsl
     "s_x2":  "Anime4K_Upscale_GAN_x2_S.glsl",  "m_x2":  "Anime4K_Upscale_GAN_x2_M.glsl",
     "l_x3":  "Anime4K_Upscale_GAN_x3_L.glsl",  "vl_x3": "Anime4K_Upscale_GAN_x3_VL.glsl",
@@ -141,7 +142,7 @@ def export_one(suffix, glsl, scale, glsl_dir, out_dir):
     except Exception as e:
         print(f"  FAIL {glsl}: {str(e)[:90]}"); return False
     out = os.path.join(out_dir, f"anime4k_gan_{suffix}.onnx")
-    torch.onnx.export(net, dummy, out, do_constant_folding=True,
+    export_onnx(net, dummy, out, do_constant_folding=True,
         input_names=['input'], output_names=['output'],
         dynamic_axes={'input': {0:'batch',2:'height',3:'width'}, 'output': {0:'batch',2:'height',3:'width'}})
     import onnx; onnx.checker.check_model(onnx.load(out))

@@ -20,6 +20,7 @@ warnings.filterwarnings("ignore")
 
 import numpy as np, torch, torch.nn as nn
 import scipy.io as sio
+from onnx_export_common import export_onnx
 
 PCA_MAT     = "srmd_pca_matlab.mat"
 KERNELS_MAT = "kernels_bicubicx234.mat"
@@ -76,7 +77,7 @@ def export_one(fname, scale, noise_flag, dmap15, weights_dir, out_dir):
     with torch.no_grad():
         o = wrap(dummy)
     out = os.path.join(out_dir, os.path.splitext(fname)[0] + ".onnx")
-    torch.onnx.export(wrap, dummy, out, do_constant_folding=True,
+    export_onnx(wrap, dummy, out, do_constant_folding=True,
         input_names=['input'], output_names=['output'],
         dynamic_axes={'input': {0:'batch',2:'height',3:'width'}, 'output': {0:'batch',2:'height',3:'width'}})
     import onnx; onnx.checker.check_model(onnx.load(out))

@@ -13,6 +13,7 @@ CUGAN_ROOT). Real-CUGAN is MIT (bilibili). See ../ACKNOWLEDGMENTS.md.
 import os, sys, time, argparse, warnings
 warnings.filterwarnings("ignore")
 import torch, torch.nn as nn, torch.nn.functional as F
+from onnx_export_common import export_onnx
 
 # ONNX-traceable wrappers: tile_mode=0 path, fixed symmetric reflect pad
 # (caller feeds aligned dims), float 0..1 output.
@@ -66,7 +67,7 @@ def export_one(fname, weights_dir, out_dir):
         out = net(dummy)
     out_name = os.path.splitext(fname)[0].replace('-', '_') + ".onnx"
     out_path = os.path.join(out_dir, out_name)
-    torch.onnx.export(net, dummy, out_path, do_constant_folding=True,
+    export_onnx(net, dummy, out_path, do_constant_folding=True,
         input_names=['input'], output_names=['output'],
         dynamic_axes={'input': {0:'batch',2:'height',3:'width'}, 'output': {0:'batch',2:'height',3:'width'}})
     import onnx; onnx.checker.check_model(onnx.load(out_path))
