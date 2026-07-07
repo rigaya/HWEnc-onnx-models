@@ -586,7 +586,7 @@ def generate_models_json(output: Path, dry_run: bool) -> None:
             entry["fp32"] = True
         if rel.parts[0] == "hdrtvnetpp":
             entry["colorspace"] = "rgb"
-            entry["colormatrix_out"] = "bt2020"
+            entry["colormatrix_out"] = "bt2020nc"
         models[key] = entry
 
     manifest = {"version": 1, "models": models}

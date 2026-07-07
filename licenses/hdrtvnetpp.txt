@@ -11,4 +11,4 @@ Converted from the official pretrained weights:
 
 The exported models take gamma-encoded BT.709 RGB in 0..1 and output
 HDRTV/PQ-domain BT.2020 RGB in 0..1. The generated models.json entries set
-colormatrix_out=bt2020 for QSVEnc / NVEnc / VCEEnc --vpp-onnx.
+colormatrix_out=bt2020nc for QSVEnc / NVEnc / VCEEnc --vpp-onnx.
