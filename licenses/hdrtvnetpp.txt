@@ -1,0 +1,14 @@
+HDRTVNet++ ONNX Models
+
+Source: https://github.com/xiaom233/HDRTVNet-plus
+Paper: Towards Efficient SDRTV-to-HDRTV by Learning from Image Formation
+License: MIT
+Copyright (c) 2023 Hoven Li
+
+Converted from the official pretrained weights:
+- AGCM.pth -> hdrtvnetpp_agcm_dynamic.onnx
+- Ensemble_AGCM_LE.pth -> hdrtvnetpp_ensemble_dynamic.onnx
+
+The exported models take gamma-encoded BT.709 RGB in 0..1 and output
+HDRTV/PQ-domain BT.2020 RGB in 0..1. The generated models.json entries set
+colormatrix_out=bt2020 for QSVEnc / NVEnc / VCEEnc --vpp-onnx.

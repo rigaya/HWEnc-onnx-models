@@ -4,7 +4,7 @@
 
 Build tools for ONNX models used by the `--vpp-onnx` filter in QSVEnc / NVEnc / VCEEnc.
 
-Generates 219 models (207 FP32 + 12 INT8) across 23 model families with a single command: download → convert → INT8 quantize → models.json.
+Generates 221 models (209 FP32 + 12 INT8) across 24 model families with a single command: download → convert → INT8 quantize → models.json.
 
 ## Quick Start
 
@@ -69,6 +69,7 @@ output/
 ├── fdncnn/
 ├── ffdnet/
 ├── fsrcnnx/
+├── hdrtvnetpp/
 ├── nnedi3/
 ├── ravu/
 ├── realcugan/
@@ -99,6 +100,7 @@ output/
 | fdncnn | PyTorch .pth | 4 | - | 4 |
 | ffdnet | PyTorch .pth | 4 | - | 4 |
 | fsrcnnx | C++ header | 4 | - | 4 |
+| hdrtvnetpp | PyTorch .pth | 2 | - | 2 |
 | nnedi3 | Python weights | 10 | - | 10 |
 | ravu | Python weights | 21 | - | 21 |
 | realcugan | PyTorch .pth | 12 | 2 | 14 |
@@ -106,7 +108,7 @@ output/
 | srmd | PyTorch .pth | 6 | - | 6 |
 | waifu2x | JSON weights | 34 | - | 34 |
 | websr | JSON weights | 9 | - | 9 |
-| **Total** | | **207** | **12** | **219** |
+| **Total** | | **209** | **12** | **221** |
 
 ## Conversion Source Types
 
@@ -118,6 +120,7 @@ Converts trained weights from bjin/mpv-prescalers via `torch.onnx.export`.
 
 ### PyTorch .pth Weights
 Converts pretrained models from KAIR, EDSR, Real-ESRGAN, Real-CUGAN, BSRGAN, etc. via `torch.onnx.export`.
+HDRTVNet++ SDR-to-HDR models are converted from the official pretrained weights.
 
 ### JSON Weights
 Builds ONNX graphs from waifu2x and websr JSON weight files.
@@ -149,7 +152,7 @@ Generates INT8 ONNX from FP32 ONNX using nncf (Neural Network Compression Framew
 | `setup_env.sh` | Python venv setup (Linux) |
 | `setup_env.bat` | Python venv setup (Windows) |
 | `quantize_int8.py` | INT8 quantization via nncf |
-| `export_*.py` | Per-family FP32 ONNX conversion scripts (20 files) |
+| `export_*.py` | Per-family FP32 ONNX conversion scripts (21 files) |
 | `convert_edsr.py` | EDSR conversion script |
 | `convert_ravu_*.py` | RAVU conversion scripts (4 files, called by export_ravu.py) |
 | `extract_anime4k_upscale_gan_glsl.py` | Anime4K GAN GLSL parsing helper |
@@ -169,6 +172,7 @@ A `LICENSE.txt` is placed in each `<family>/` directory with full provenance det
 | DnCNN, DPSR, DRUNet, ESRGAN, FDnCNN, FFDNet, SRMD | MIT | Kai Zhang (KAIR) |
 | EDSR | MIT | Sanghyun Son |
 | FSRCNNX | **GPL-3.0** (igv's trained weights) | igv, nessotrin, TianZerL |
+| HDRTVNet++ | MIT | Hoven Li |
 | NNEDI3 | **LGPL-3.0** (trained weights) | bjin |
 | RAVU | **LGPL-3.0** (trained weights) | bjin |
 | Real-CUGAN | MIT | bilibili |

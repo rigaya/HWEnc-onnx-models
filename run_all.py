@@ -63,6 +63,7 @@ REPOS = [
     ("websr", "https://github.com/sb2702/websr/archive/refs/heads/main.zip", "_work/repos/websr"),
     ("Real-CUGAN", "https://github.com/bilibili/ailab/archive/refs/heads/main.zip", "_work/repos/Real-CUGAN"),
     ("mpv-prescalers", "https://github.com/bjin/mpv-prescalers/archive/refs/heads/source.zip", "_work/repos/mpv-prescalers"),
+    ("HDRTVNet-plus", "https://github.com/xiaom233/HDRTVNet-plus/archive/refs/heads/main.zip", "_work/repos/HDRTVNet-plus"),
 ]
 
 REALCUGAN_WEIGHTS_URL = "https://github.com/bilibili/ailab/releases/download/Real-CUGAN/updated_weights.zip"
@@ -151,6 +152,9 @@ CONVERT_COMMANDS = [
     # --- RAVU (trained weights from mpv-prescalers, LGPL-3.0) ---
     ("export_ravu.py", ["--repo-root", "{repos}/mpv-prescalers", "--output", "{out}/ravu"]),
     ("export_nnedi3.py", ["--repo-root", "{repos}/mpv-prescalers", "--output", "{out}/nnedi3"]),
+
+    # --- SDR-to-HDR (HDRTVNet++ の学習済み重み, MIT) ---
+    ("export_hdrtvnetpp.py", ["--repo-root", "{repos}/HDRTVNet-plus", "--weights-dir", "{repos}/HDRTVNet-plus/pretrained_models", "--output", "{out}/hdrtvnetpp"]),
 ]
 
 
@@ -519,6 +523,7 @@ LICENSE_MAP = {
     "fdncnn": "fdncnn.txt",
     "ffdnet": "ffdnet.txt",
     "fsrcnnx": "fsrcnnx.txt",
+    "hdrtvnetpp": "hdrtvnetpp.txt",
     "nnedi3": "nnedi3.txt",
     "ravu": "ravu.txt",
     "realcugan": "realcugan.txt",
@@ -579,6 +584,9 @@ def generate_models_json(output: Path, dry_run: bool) -> None:
         entry = {"path": str(rel.as_posix())}
         if rel.parts[0] == "nnedi3":
             entry["fp32"] = True
+        if rel.parts[0] == "hdrtvnetpp":
+            entry["colorspace"] = "rgb"
+            entry["colormatrix_out"] = "bt2020"
         models[key] = entry
 
     manifest = {"version": 1, "models": models}

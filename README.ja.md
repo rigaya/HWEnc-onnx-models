@@ -2,7 +2,7 @@
 
 QSVEnc / NVEnc / VCEEnc の `--vpp-onnx` フィルタで使用する ONNX モデルのビルドツール群。
 
-23 ファミリー・219 モデル（FP32 207 + INT8 12）を、1コマンドでダウンロード → 変換 → INT8 量子化 → models.json 生成まで実行する。
+24 ファミリー・221 モデル（FP32 209 + INT8 12）を、1コマンドでダウンロード → 変換 → INT8 量子化 → models.json 生成まで実行する。
 
 ## クイックスタート
 
@@ -67,6 +67,7 @@ output/
 ├── fdncnn/
 ├── ffdnet/
 ├── fsrcnnx/
+├── hdrtvnetpp/
 ├── nnedi3/
 ├── ravu/
 ├── realcugan/
@@ -97,6 +98,7 @@ output/
 | fdncnn | PyTorch .pth | 4 | - | 4 |
 | ffdnet | PyTorch .pth | 4 | - | 4 |
 | fsrcnnx | C++ header | 4 | - | 4 |
+| hdrtvnetpp | PyTorch .pth | 2 | - | 2 |
 | nnedi3 | Python weights | 10 | - | 10 |
 | ravu | Python weights | 21 | - | 21 |
 | realcugan | PyTorch .pth | 12 | 2 | 14 |
@@ -104,7 +106,7 @@ output/
 | srmd | PyTorch .pth | 6 | - | 6 |
 | waifu2x | JSON weights | 34 | - | 34 |
 | websr | JSON weights | 9 | - | 9 |
-| **合計** | | **207** | **12** | **219** |
+| **合計** | | **209** | **12** | **221** |
 
 ## 変換ソース種別
 
@@ -116,6 +118,7 @@ bjin/mpv-prescalers の学習済み重みから `torch.onnx.export` で変換。
 
 ### PyTorch .pth ウェイト
 KAIR, EDSR, Real-ESRGAN, Real-CUGAN, BSRGAN 等の学習済みモデルを `torch.onnx.export` で変換。
+HDRTVNet++ の SDR→HDR モデルは公式の学習済み重みから変換。
 
 ### JSON ウェイト
 waifu2x, websr の JSON 形式ウェイトから ONNX グラフを構築。
@@ -147,7 +150,7 @@ nncf (Neural Network Compression Framework) の Post-Training Quantization で F
 | `setup_env.sh` | Python venv セットアップ (Linux) |
 | `setup_env.bat` | Python venv セットアップ (Windows) |
 | `quantize_int8.py` | nncf による INT8 量子化 |
-| `export_*.py` | 各ファミリーの FP32 ONNX 変換スクリプト (20本) |
+| `export_*.py` | 各ファミリーの FP32 ONNX 変換スクリプト (21本) |
 | `convert_edsr.py` | EDSR 変換スクリプト |
 | `convert_ravu_*.py` | RAVU 変換スクリプト (4本、export_ravu.py から呼出) |
 | `extract_anime4k_upscale_gan_glsl.py` | Anime4K GAN GLSL 解析ヘルパー |
@@ -167,6 +170,7 @@ nncf (Neural Network Compression Framework) の Post-Training Quantization で F
 | DnCNN, DPSR, DRUNet, ESRGAN, FDnCNN, FFDNet, SRMD | MIT | Kai Zhang (KAIR) |
 | EDSR | MIT | Sanghyun Son |
 | FSRCNNX | **GPL-3.0** (igvの学習済み重み) | igv, nessotrin, TianZerL |
+| HDRTVNet++ | MIT | Hoven Li |
 | NNEDI3 | **LGPL-3.0** (学習済み重み) | bjin |
 | RAVU | **LGPL-3.0** (学習済み重み) | bjin |
 | Real-CUGAN | MIT | bilibili |
