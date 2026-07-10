@@ -4,7 +4,7 @@
 
 Build tools for ONNX models used by the `--vpp-onnx` filter in QSVEnc / NVEnc / VCEEnc.
 
-Generates 221 models (209 FP32 + 12 INT8) across 24 model families with a single command: download → convert → INT8 quantize → models.json.
+Generates 253 models (241 FP32 + 12 INT8) across 27 model families with a single command: download → convert → INT8 quantize → models.json.
 
 ## Quick Start
 
@@ -99,16 +99,19 @@ output/
 | esrgan | PyTorch .pth | 5 | - | 5 |
 | fdncnn | PyTorch .pth | 4 | - | 4 |
 | ffdnet | PyTorch .pth | 4 | - | 4 |
+| fbcnn | PyTorch .pth | 4 | - | 4 |
 | fsrcnnx | C++ header | 4 | - | 4 |
 | hdrtvnetpp | PyTorch .pth | 2 | - | 2 |
 | nnedi3 | Python weights | 10 | - | 10 |
+| nafnet | PyTorch .pth | 4 | - | 4 |
 | ravu | Python weights | 21 | - | 21 |
 | realcugan | PyTorch .pth | 12 | 2 | 14 |
 | realesrgan | PyTorch .pth | 8 | 2 | 10 |
 | srmd | PyTorch .pth | 6 | - | 6 |
+| superimage | PyTorch .pth | 24 | - | 24 |
 | waifu2x | JSON weights | 34 | - | 34 |
 | websr | JSON weights | 9 | - | 9 |
-| **Total** | | **209** | **12** | **221** |
+| **Total** | | **241** | **12** | **253** |
 
 ## Conversion Source Types
 
@@ -173,10 +176,13 @@ A `LICENSE.txt` is placed in each `<family>/` directory with full provenance det
 | EDSR | MIT | Sanghyun Son |
 | FSRCNNX | **GPL-3.0** (igv's trained weights) | igv, nessotrin, TianZerL |
 | HDRTVNet++ | MIT | Hoven Li |
+| FBCNN | Apache-2.0 | Jiaxi Jiang, Kai Zhang, Radu Timofte |
+| NAFNet | MIT | megvii-model |
 | NNEDI3 | **LGPL-3.0** (trained weights) | bjin |
 | RAVU | **LGPL-3.0** (trained weights) | bjin |
 | Real-CUGAN | MIT | bilibili |
 | Real-ESRGAN | BSD-3-Clause | Xintao Wang |
+| super-image (PAN, CARN, A2N, AWSRN, MSRN) | Apache-2.0 | Eugene Siow et al. |
 | waifu2x | MIT | nagadomi, nihui (ncnn topology) |
 | websr | MIT | sb2702, bloc97 |
 

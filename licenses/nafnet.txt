@@ -1,0 +1,30 @@
+NAFNet - Nonlinear Activation Free Network for Image Restoration
+================================================================
+
+Models:   nafnet_gopro_width32  (motion deblur)
+          nafnet_reds_width64   (video deblur)
+          nafnet_sidd_width32   (real-image denoise)
+          nafnet_sidd_width64   (real-image denoise)
+Source:   https://github.com/megvii-research/NAFNet
+Weights:  GoPro / REDS / SIDD pretrained models (official, mirrored on
+          https://huggingface.co/nyanko7/nafnet-models)
+Paper:    L. Chen, X. Chu, X. Zhang, J. Sun, "Simple Baselines for Image
+          Restoration", ECCV 2022.
+
+License:  MIT
+Copyright (c) 2022 megvii-model.
+
+The ONNX models in onnx/nafnet/ are produced from the official MIT-licensed
+pretrained weights by export_nafnet.py, which loads the network from the vendored
+nafnet.py. nafnet.py is the upstream NAFNet architecture with one change: its
+custom autograd LayerNorm (LayerNormFunction) is replaced by a mathematically
+identical, export-safe nn.Module with the same weight/bias parameters, so the
+graph exports to ONNX (the original custom autograd Function does not). No other
+change is made; the vendored code carries the same MIT terms.
+
+NAFNet operates on [0,1] RGB with an input residual and restores at the same
+resolution (scale 1); the export bakes only a final clamp to [0,1]. The network
+pads internally to a multiple of 16 and crops back, which exports dynamically, so
+any height/width works.
+
+A full copy of the MIT License is at https://opensource.org/license/mit/

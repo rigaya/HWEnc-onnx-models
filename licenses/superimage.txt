@@ -1,0 +1,37 @@
+super-image - lightweight super-resolution models (PAN / CARN / A2N)
+===================================================================
+
+Models:   pan, pan-bam, carn, carn-bam, a2n, awsrn-bam, msrn, msrn-bam
+          (each x2 / x3 / x4 = 24 models)
+Source:   https://github.com/eugenesiow/super-image
+Weights:  https://huggingface.co/eugenesiow/<model>  (pytorch_model_2x/3x/4x.pt)
+          model in: pan, pan-bam, carn, carn-bam, a2n, awsrn-bam, msrn, msrn-bam
+Papers:   PAN   - Zhao et al., "Efficient Image Super-Resolution Using Pixel
+                  Attention", ECCVW 2020.
+          CARN  - Ahn et al., "Fast, Accurate, and Lightweight Super-Resolution
+                  with Cascading Residual Network", ECCV 2018.
+          A2N   - Chen et al., "Attention in Attention Network for Image
+                  Super-Resolution", 2021.
+          AWSRN - Wang et al., "Lightweight Image Super-Resolution with Adaptive
+                  Weighted Learning Network", 2019.
+          MSRN  - Li et al., "Multi-scale Residual Network for Image
+                  Super-Resolution", ECCV 2018.
+          BAM   - Balanced Attention Module variant of the base architecture.
+
+License:  Apache-2.0
+Copyright (c) Eugene Siow, Romeo Orsolino and the super-image contributors.
+
+The ONNX models in onnx/superimage/ are produced from the official Apache-2.0
+pretrained weights by export_superimage.py. The network and config classes are
+loaded from the vendored super_image/ mini-package in this submission: it contains
+the original upstream per-model modeling/config files unchanged, plus a minimal,
+dependency-free subset of the upstream base (the building blocks from
+modeling_utils.py and stubbed PreTrainedModel / PretrainedConfig / DIV2K
+constants), so the conversion needs no super-image runtime install. All vendored
+code is Apache-2.0 and carries the same terms.
+
+The networks operate on [0,1] RGB; the export wraps a final clamp to [0,1] to
+match the --vpp-onnx host range. No other value rescale is baked in.
+
+A full copy of the Apache License 2.0 is available at
+https://www.apache.org/licenses/LICENSE-2.0

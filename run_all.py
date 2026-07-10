@@ -62,6 +62,7 @@ REPOS = [
     ("Anime4K", "https://github.com/bloc97/Anime4K/archive/refs/heads/master.zip", "_work/repos/Anime4K"),
     ("websr", "https://github.com/sb2702/websr/archive/refs/heads/main.zip", "_work/repos/websr"),
     ("Real-CUGAN", "https://github.com/bilibili/ailab/archive/refs/heads/main.zip", "_work/repos/Real-CUGAN"),
+    ("FBCNN", "https://github.com/jiaxi-jiang/FBCNN/archive/refs/heads/main.zip", "_work/repos/FBCNN"),
     ("mpv-prescalers", "https://github.com/bjin/mpv-prescalers/archive/refs/heads/source.zip", "_work/repos/mpv-prescalers"),
     ("HDRTVNet-plus", "https://github.com/xiaom233/HDRTVNet-plus/archive/refs/heads/main.zip", "_work/repos/HDRTVNet-plus"),
 ]
@@ -83,6 +84,25 @@ REALESRGAN_RELEASES = [
     ("https://github.com/xinntao/Real-ESRGAN/releases/download/v0.2.2.4/RealESRGAN_x4plus_anime_6B.pth", "_work/realesrgan/RealESRGAN_x4plus_anime_6B.pth"),
     ("https://github.com/xinntao/Real-ESRGAN/releases/download/v0.2.1/RealESRGAN_x2plus.pth", "_work/realesrgan/RealESRGAN_x2plus.pth"),
     ("https://github.com/xinntao/Real-ESRGAN/releases/download/v0.1.1/RealESRNet_x4plus.pth", "_work/realesrgan/RealESRNet_x4plus.pth"),
+]
+
+FBCNN_RELEASES = [
+    ("https://github.com/jiaxi-jiang/FBCNN/releases/download/v1.0/fbcnn_color.pth", "_work/fbcnn/fbcnn_color.pth"),
+    ("https://github.com/jiaxi-jiang/FBCNN/releases/download/v1.0/fbcnn_gray.pth", "_work/fbcnn/fbcnn_gray.pth"),
+]
+
+NAFNET_RELEASES = [
+    (f"https://huggingface.co/nyanko7/nafnet-models/resolve/main/{filename}", f"_work/nafnet/{filename}")
+    for filename in ("NAFNet-GoPro-width32.pth", "NAFNet-REDS-width64.pth", "NAFNet-SIDD-width32.pth", "NAFNet-SIDD-width64.pth")
+]
+
+SUPERIMAGE_MODELS = [
+    ("pan", "pan"), ("pan-bam", "pan_bam"), ("carn", "carn"), ("carn-bam", "carn_bam"),
+    ("a2n", "a2n"), ("awsrn-bam", "awsrn_bam"), ("msrn", "msrn"), ("msrn-bam", "msrn_bam"),
+]
+SUPERIMAGE_RELEASES = [
+    (f"https://huggingface.co/eugenesiow/{repo}/resolve/main/pytorch_model_{scale}x.pt", f"_work/superimage/{key}_{scale}x.pt")
+    for repo, key in SUPERIMAGE_MODELS for scale in (2, 3, 4)
 ]
 
 EDSR_WEIGHTS = [
@@ -132,6 +152,9 @@ CONVERT_COMMANDS = [
 
     # --- .pth based (network definitions imported from the external repos) ---
     ("export_realesrgan.py", ["--models-dir", "{work}/realesrgan", "--output", "{out}/realesrgan"]),
+    ("export_fbcnn.py", ["--repo-root", "{repos}/FBCNN", "--weights-dir", "{work}/fbcnn", "--output", "{out}/fbcnn"]),
+    ("export_nafnet.py", ["--weights-dir", "{work}/nafnet", "--output", "{out}/nafnet"]),
+    ("export_superimage.py", ["--repo-root", str(SCRIPT_DIR), "--weights-dir", "{work}/superimage", "--output", "{out}/superimage"]),
     ("export_bsrgan.py", ["--repo-root", "{repos}/KAIR", "--weights-dir", "{repos}/KAIR/model_zoo", "--output", "{out}/bsrgan"]),
     ("export_dpsr.py", ["--repo-root", "{repos}/KAIR", "--weights-dir", "{repos}/KAIR/model_zoo", "--output", "{out}/dpsr"]),
     ("export_drunet.py", ["--repo-root", "{repos}/KAIR", "--weights-dir", "{repos}/KAIR/model_zoo", "--output", "{out}/drunet"]),
@@ -279,6 +302,10 @@ def download_phase(output: Path, dry_run: bool) -> None:
 
     print("  Downloading pretrained weights from GitHub Releases...")
     for url, rel_dest in REALESRGAN_RELEASES:
+        download_file(url, output / rel_dest, dry_run)
+
+    print("  Downloading FBCNN, NAFNet, and super-image weights...")
+    for url, rel_dest in FBCNN_RELEASES + NAFNET_RELEASES + SUPERIMAGE_RELEASES:
         download_file(url, output / rel_dest, dry_run)
 
     print("  Downloading EDSR baseline weights...")
@@ -522,13 +549,16 @@ LICENSE_MAP = {
     "edsr": "edsr.txt",
     "fdncnn": "fdncnn.txt",
     "ffdnet": "ffdnet.txt",
+    "fbcnn": "fbcnn.txt",
     "fsrcnnx": "fsrcnnx.txt",
     "hdrtvnetpp": "hdrtvnetpp.txt",
     "nnedi3": "nnedi3.txt",
+    "nafnet": "nafnet.txt",
     "ravu": "ravu.txt",
     "realcugan": "realcugan.txt",
     "realesrgan": "realesrgan.txt",
     "srmd": "srmd.txt",
+    "superimage": "superimage.txt",
     "waifu2x": "waifu2x.txt",
     "websr": "websr.txt",
 }

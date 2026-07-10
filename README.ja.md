@@ -2,7 +2,7 @@
 
 QSVEnc / NVEnc / VCEEnc の `--vpp-onnx` フィルタで使用する ONNX モデルのビルドツール群。
 
-24 ファミリー・221 モデル（FP32 209 + INT8 12）を、1コマンドでダウンロード → 変換 → INT8 量子化 → models.json 生成まで実行する。
+27 ファミリー・253 モデル（FP32 241 + INT8 12）を、1コマンドでダウンロード → 変換 → INT8 量子化 → models.json 生成まで実行する。
 
 ## クイックスタート
 
@@ -97,16 +97,19 @@ output/
 | esrgan | PyTorch .pth | 5 | - | 5 |
 | fdncnn | PyTorch .pth | 4 | - | 4 |
 | ffdnet | PyTorch .pth | 4 | - | 4 |
+| fbcnn | PyTorch .pth | 4 | - | 4 |
 | fsrcnnx | C++ header | 4 | - | 4 |
 | hdrtvnetpp | PyTorch .pth | 2 | - | 2 |
 | nnedi3 | Python weights | 10 | - | 10 |
+| nafnet | PyTorch .pth | 4 | - | 4 |
 | ravu | Python weights | 21 | - | 21 |
 | realcugan | PyTorch .pth | 12 | 2 | 14 |
 | realesrgan | PyTorch .pth | 8 | 2 | 10 |
 | srmd | PyTorch .pth | 6 | - | 6 |
+| superimage | PyTorch .pth | 24 | - | 24 |
 | waifu2x | JSON weights | 34 | - | 34 |
 | websr | JSON weights | 9 | - | 9 |
-| **合計** | | **209** | **12** | **221** |
+| **合計** | | **241** | **12** | **253** |
 
 ## 変換ソース種別
 
@@ -171,10 +174,13 @@ nncf (Neural Network Compression Framework) の Post-Training Quantization で F
 | EDSR | MIT | Sanghyun Son |
 | FSRCNNX | **GPL-3.0** (igvの学習済み重み) | igv, nessotrin, TianZerL |
 | HDRTVNet++ | MIT | Hoven Li |
+| FBCNN | Apache-2.0 | Jiaxi Jiang, Kai Zhang, Radu Timofte |
+| NAFNet | MIT | megvii-model |
 | NNEDI3 | **LGPL-3.0** (学習済み重み) | bjin |
 | RAVU | **LGPL-3.0** (学習済み重み) | bjin |
 | Real-CUGAN | MIT | bilibili |
 | Real-ESRGAN | BSD-3-Clause | Xintao Wang |
+| super-image (PAN, CARN, A2N, AWSRN, MSRN) | Apache-2.0 | Eugene Siow ほか |
 | waifu2x | MIT | nagadomi, nihui (ncnnトポロジー) |
 | websr | MIT | sb2702, bloc97 |
 

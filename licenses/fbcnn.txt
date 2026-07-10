@@ -1,0 +1,22 @@
+FBCNN - Flexible Blind JPEG Artifacts Removal
+=============================================
+
+Models:   fbcnn_color_blind, fbcnn_gray_blind, fbcnn_color_flex, fbcnn_gray_flex
+Source:   https://github.com/jiaxi-jiang/FBCNN
+Weights:  https://github.com/jiaxi-jiang/FBCNN/releases/tag/v1.0
+          (fbcnn_color.pth, fbcnn_gray.pth)
+Paper:    J. Jiang, K. Zhang, R. Timofte, "Towards Flexible Blind JPEG Artifacts
+          Removal", ICCV 2021.
+
+License:  Apache-2.0
+Copyright (c) Jiaxi Jiang, Kai Zhang, Radu Timofte.
+
+The ONNX models in onnx/fbcnn/ are produced from the official Apache-2.0
+pretrained weights by export_fbcnn.py. The conversion replicates FBCNN's inner
+forward without its internal multiple-of-8 padding so the graph is dynamic in
+height/width (input must therefore be a multiple of 8, as for DRUNet). FBCNN
+operates on [0,1] RGB / luma, matching the --vpp-onnx host normalisation; no
+value rescale is baked in. The derived models carry the same Apache-2.0 terms.
+
+A full copy of the Apache License 2.0 is available at
+https://www.apache.org/licenses/LICENSE-2.0
