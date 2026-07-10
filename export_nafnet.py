@@ -25,6 +25,7 @@ import os, sys, argparse, warnings
 warnings.filterwarnings("ignore")
 import numpy as np
 import torch, torch.nn as nn
+from onnx_export_common import export_onnx
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from nafnet import NAFNet
@@ -56,7 +57,7 @@ def export_one(name, weights_dir, out_dir):
     model = Clamp01(net).eval()
     os.makedirs(out_dir, exist_ok=True)
     out = os.path.join(out_dir, name + ".onnx")
-    torch.onnx.export(
+    export_onnx(
         model, torch.rand(1, 3, 64, 64), out, do_constant_folding=True, opset_version=17,
         input_names=["input"], output_names=["output"],
         dynamic_axes={"input": {0: "batch", 2: "height", 3: "width"},

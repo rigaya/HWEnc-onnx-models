@@ -29,6 +29,7 @@ import os, sys, argparse, warnings
 warnings.filterwarnings("ignore")
 import numpy as np
 import torch, torch.nn as nn
+from onnx_export_common import export_onnx
 
 
 def build_registry(repo_root):
@@ -77,7 +78,7 @@ def export_one(name, net, scale, out_dir):
     out = os.path.join(out_dir, name + ".onnx")
     model = Clamp01(net).eval()
     dummy = torch.rand(1, 3, 32, 48)
-    torch.onnx.export(
+    export_onnx(
         model, dummy, out, do_constant_folding=True, opset_version=17,
         input_names=["input"], output_names=["output"],
         dynamic_axes={"input": {0: "batch", 2: "height", 3: "width"},

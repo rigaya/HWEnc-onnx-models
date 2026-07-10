@@ -26,6 +26,7 @@ import os, sys, argparse, warnings
 warnings.filterwarnings("ignore")
 import numpy as np
 import torch, torch.nn as nn
+from onnx_export_common import export_onnx
 
 
 def import_fbcnn(repo_root):
@@ -100,7 +101,7 @@ def export_one(name, wrap, in_ch, out_ch, ref_fn, out_dir):
     os.makedirs(out_dir, exist_ok=True)
     out = os.path.join(out_dir, name + ".onnx")
     dummy = torch.rand(1, in_ch, 64, 64)  # 64 is a multiple of 8 -> no padding baked
-    torch.onnx.export(
+    export_onnx(
         wrap.eval(), dummy, out, do_constant_folding=True, opset_version=17,
         input_names=['input'], output_names=['output'],
         dynamic_axes={'input': {0: 'batch', 2: 'height', 3: 'width'},
