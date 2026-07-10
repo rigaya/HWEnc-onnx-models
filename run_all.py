@@ -144,7 +144,7 @@ CONVERT_COMMANDS = [
     # --- GLSL based (self-contained, read shaders straight from the repos) ---
     ("export_acnet.py", ["--glsl-dir", "{repos}/ACNetGLSL/glsl/acnet", "--output", "{out}/acnet"]),
     ("export_arnet.py", ["--glsl-dir", "{repos}/ACNetGLSL/glsl/arnet", "--output", "{out}/arnet"]),
-    ("export_fsrcnnx.py", ["--param-header", "{repos}/Anime4KCPP/core/include/AC/Core/Model/Param/FSRCNNX.p", "--output", "{out}/fsrcnnx"]),
+    ("export_fsrcnnx.py", ["--param-header", "{repos}/Anime4KCPP/core/internal/AC/Core/Internal/Model/Param/FSRCNNX.p", "--output", "{out}/fsrcnnx"]),
     ("export_anime4k_upscale_cnn.py", ["--glsl-dir", "{repos}/Anime4K/glsl/Upscale", "--output", "{out}/anime4k_upscale"]),
     ("export_anime4k_restore.py", ["--glsl-dir", "{repos}/Anime4K/glsl/Restore", "--output", "{out}/anime4k_restore"]),
     ("export_anime3d.py", ["--glsl-dir", "{repos}/Anime4K/glsl/Upscale", "--output", "{out}/anime3d"]),

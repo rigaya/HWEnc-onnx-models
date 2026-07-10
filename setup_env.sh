@@ -17,9 +17,9 @@ fi
 # shellcheck disable=SC1091
 source "$VENV_DIR/bin/activate"
 
-pip install --quiet --upgrade pip
-pip install --quiet torch --index-url https://download.pytorch.org/whl/cpu
-pip install --quiet -r "$SCRIPT_DIR/requirements.txt"
+python -m pip install --quiet --upgrade pip
+python -m pip install --quiet torch torchvision --index-url https://download.pytorch.org/whl/cpu
+python -m pip install --quiet -r "$SCRIPT_DIR/requirements.txt"
 
 echo "  Python: $(python --version)"
 echo "  torch:  $(python -c 'import torch; print(torch.__version__)')"

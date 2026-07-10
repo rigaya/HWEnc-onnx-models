@@ -1,7 +1,7 @@
 FSRCNNX ONNX Models
 
 Weights source: https://github.com/TianZerL/Anime4KCPP
-                (core/include/AC/Core/Model/Param/FSRCNNX.p)
+                (core/internal/AC/Core/Internal/Model/Param/FSRCNNX.p)
 Anime4KCPP License: MIT
 Copyright (c) 2020 TianZer
 

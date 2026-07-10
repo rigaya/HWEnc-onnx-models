@@ -11,6 +11,7 @@ Usage:
 """
 
 import argparse
+import contextlib
 import os
 import sys
 import warnings
@@ -42,6 +43,23 @@ TARGETS = [
 ]
 
 
+@contextlib.contextmanager
+def suppress_nncf_progress():
+    import nncf.common.logging.track_progress as track_progress
+
+    original_init = track_progress.track.__init__
+
+    def init_without_progress(self, *args, **kwargs):
+        kwargs["disable"] = True
+        original_init(self, *args, **kwargs)
+
+    track_progress.track.__init__ = init_without_progress
+    try:
+        yield
+    finally:
+        track_progress.track.__init__ = original_init
+
+
 def quantize_one(src_path, dst_path, input_channels, preset_name, dry_run):
     import nncf
     import onnx
@@ -69,11 +87,12 @@ def quantize_one(src_path, dst_path, input_channels, preset_name, dry_run):
         for _ in range(300)
     ]
 
-    quantized = nncf.quantize(
-        model,
-        nncf.Dataset(calibration_data),
-        preset=preset,
-    )
+    with suppress_nncf_progress():
+        quantized = nncf.quantize(
+            model,
+            nncf.Dataset(calibration_data),
+            preset=preset,
+        )
 
     os.makedirs(os.path.dirname(dst_path), exist_ok=True)
     onnx.save(quantized, dst_path)
