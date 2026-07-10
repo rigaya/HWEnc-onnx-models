@@ -1,0 +1,16 @@
+RIFE v4.x ONNX
+================
+
+Models:   rife_v4.0, rife_v4.2, rife_v4.3, rife_v4.4, rife_v4.5,
+          rife_v4.6, rife_v4.7, rife_v4.8, rife_v4.9, rife_v4.10
+Source:   https://github.com/AmusementClub/vs-mlrt/releases/tag/model-20220923
+Archive:  rife_v8.7z
+Original: https://github.com/megvii-research/ECCV2022-RIFE
+          https://github.com/hzwer/Practical-RIFE
+
+License: MIT
+Copyright (c) Megvii Inc.
+
+このファミリーはQSVEncの --vpp-rife-ov 専用です。11チャンネル入力のため、
+--vpp-onnx の models.json には登録しません。extract_rife.py は公式配布
+アーカイブから必要な10モデルを展開し、SHA-256とONNXの入出力形状を検証します。

@@ -69,6 +69,7 @@ REPOS = [
 
 REALCUGAN_WEIGHTS_URL = "https://github.com/bilibili/ailab/releases/download/Real-CUGAN/updated_weights.zip"
 ANIME4K_RELEASE_URL = "https://github.com/bloc97/Anime4K/releases/download/v4.0.1/Anime4K_v4.0.zip"
+RIFE_MODELS_URL = "https://github.com/AmusementClub/vs-mlrt/releases/download/model-20220923/rife_v8.7z"
 
 # R4F32 ONNX models were removed from ArtCNN main after commit e13ac6c7 (2026-05-12).
 ARTCNN_EXTRA_ONNX = [
@@ -178,6 +179,8 @@ CONVERT_COMMANDS = [
 
     # --- SDR-to-HDR (HDRTVNet++ の学習済み重み, MIT) ---
     ("export_hdrtvnetpp.py", ["--repo-root", "{repos}/HDRTVNet-plus", "--weights-dir", "{repos}/HDRTVNet-plus/pretrained_models", "--output", "{out}/hdrtvnetpp"]),
+    # RIFE is distributed as verified prebuilt ONNX files in the upstream archive.
+    ("extract_rife.py", ["--archive", "{work}/rife_v8.7z", "--output", "{out}/rife"]),
 ]
 
 
@@ -324,6 +327,9 @@ def download_phase(output: Path, dry_run: bool) -> None:
 
     print("  Downloading Real-CUGAN weights...")
     download_realcugan_weights(output, dry_run)
+
+    print("  Downloading RIFE ONNX archive...")
+    download_file(RIFE_MODELS_URL, output / "_work/rife_v8.7z", dry_run)
 
     # ArtCNN ships pre-built ONNX (incl. int8); just copy them in, no export.
     copy_artcnn(output, dry_run)
@@ -557,6 +563,7 @@ LICENSE_MAP = {
     "ravu": "ravu.txt",
     "realcugan": "realcugan.txt",
     "realesrgan": "realesrgan.txt",
+    "rife": "rife.txt",
     "srmd": "srmd.txt",
     "superimage": "superimage.txt",
     "waifu2x": "waifu2x.txt",
@@ -590,7 +597,9 @@ def install_licenses(output: Path, dry_run: bool) -> None:
 # Phase 4: models.json
 # ---------------------------------------------------------------------------
 
-SCAN_EXCLUDE = {"_work"}
+# RIFE is used only by QSVEnc --vpp-rife-ov.  Its 11-channel input is not
+# compatible with the generic --vpp-onnx model manifest.
+SCAN_EXCLUDE = {"_work", "rife"}
 
 
 def generate_models_json(output: Path, dry_run: bool) -> None:

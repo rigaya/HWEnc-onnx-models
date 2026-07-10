@@ -1,8 +1,8 @@
 # HWEnc-onnx-models
 
-QSVEnc / NVEnc / VCEEnc の `--vpp-onnx` フィルタで使用する ONNX モデルのビルドツール群。
+QSVEnc / NVEnc / VCEEnc の `--vpp-onnx` と、QSVEnc の `--vpp-rife-ov` で使用する ONNX モデルのビルドツール群。
 
-27 ファミリー・253 モデル（FP32 241 + INT8 12）を、1コマンドでダウンロード → 変換 → INT8 量子化 → models.json 生成まで実行する。
+`--vpp-onnx` 向け27ファミリー・253モデル（FP32 241 + INT8 12）と、QSVEnc専用RIFE 10モデルを、1コマンドでダウンロード → 変換または展開 → INT8量子化 → models.json生成まで実行する。
 
 ## クイックスタート
 
@@ -72,6 +72,7 @@ output/
 ├── ravu/
 ├── realcugan/
 ├── realesrgan/
+├── rife/               # QSVEnc --vpp-rife-ov 専用（models.jsonには未登録）
 ├── srmd/
 ├── waifu2x/
 ├── websr/
@@ -105,6 +106,7 @@ output/
 | ravu | Python weights | 21 | - | 21 |
 | realcugan | PyTorch .pth | 12 | 2 | 14 |
 | realesrgan | PyTorch .pth | 8 | 2 | 10 |
+| rife (QSVEnc専用) | upstream ONNX archive | 10 | - | 10 |
 | srmd | PyTorch .pth | 6 | - | 6 |
 | superimage | PyTorch .pth | 24 | - | 24 |
 | waifu2x | JSON weights | 34 | - | 34 |
@@ -154,6 +156,7 @@ nncf (Neural Network Compression Framework) の Post-Training Quantization で F
 | `setup_env.bat` | Python venv セットアップ (Windows) |
 | `quantize_int8.py` | nncf による INT8 量子化 |
 | `export_*.py` | 各ファミリーの FP32 ONNX 変換スクリプト (21本) |
+| `extract_rife.py` | 公式アーカイブからRIFE ONNXを展開し、SHA-256と入出力形状を検証 |
 | `convert_edsr.py` | EDSR 変換スクリプト |
 | `convert_ravu_*.py` | RAVU 変換スクリプト (4本、export_ravu.py から呼出) |
 | `extract_anime4k_upscale_gan_glsl.py` | Anime4K GAN GLSL 解析ヘルパー |
@@ -180,6 +183,7 @@ nncf (Neural Network Compression Framework) の Post-Training Quantization で F
 | RAVU | **LGPL-3.0** (学習済み重み) | bjin |
 | Real-CUGAN | MIT | bilibili |
 | Real-ESRGAN | BSD-3-Clause | Xintao Wang |
+| RIFE v4.x | MIT | Megvii, hzwer |
 | super-image (PAN, CARN, A2N, AWSRN, MSRN) | Apache-2.0 | Eugene Siow ほか |
 | waifu2x | MIT | nagadomi, nihui (ncnnトポロジー) |
 | websr | MIT | sb2702, bloc97 |

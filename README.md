@@ -2,9 +2,9 @@
 
 [**日本語版はこちら / Japanese**](README.ja.md)
 
-Build tools for ONNX models used by the `--vpp-onnx` filter in QSVEnc / NVEnc / VCEEnc.
+Build tools for ONNX models used by `--vpp-onnx` in QSVEnc / NVEnc / VCEEnc and `--vpp-rife-ov` in QSVEnc.
 
-Generates 253 models (241 FP32 + 12 INT8) across 27 model families with a single command: download → convert → INT8 quantize → models.json.
+Generates 253 `--vpp-onnx` models (241 FP32 + 12 INT8) across 27 families, plus 10 QSVEnc-only RIFE models, with a single command: download → convert or extract → INT8 quantize → models.json.
 
 ## Quick Start
 
@@ -74,6 +74,7 @@ output/
 ├── ravu/
 ├── realcugan/
 ├── realesrgan/
+├── rife/               # QSVEnc --vpp-rife-ov only; excluded from models.json
 ├── srmd/
 ├── waifu2x/
 ├── websr/
@@ -107,6 +108,7 @@ output/
 | ravu | Python weights | 21 | - | 21 |
 | realcugan | PyTorch .pth | 12 | 2 | 14 |
 | realesrgan | PyTorch .pth | 8 | 2 | 10 |
+| rife (QSVEnc only) | upstream ONNX archive | 10 | - | 10 |
 | srmd | PyTorch .pth | 6 | - | 6 |
 | superimage | PyTorch .pth | 24 | - | 24 |
 | waifu2x | JSON weights | 34 | - | 34 |
@@ -156,6 +158,7 @@ Generates INT8 ONNX from FP32 ONNX using nncf (Neural Network Compression Framew
 | `setup_env.bat` | Python venv setup (Windows) |
 | `quantize_int8.py` | INT8 quantization via nncf |
 | `export_*.py` | Per-family FP32 ONNX conversion scripts (21 files) |
+| `extract_rife.py` | Extracts RIFE ONNX from the official archive and verifies SHA-256 and I/O shapes |
 | `convert_edsr.py` | EDSR conversion script |
 | `convert_ravu_*.py` | RAVU conversion scripts (4 files, called by export_ravu.py) |
 | `extract_anime4k_upscale_gan_glsl.py` | Anime4K GAN GLSL parsing helper |
@@ -182,6 +185,7 @@ A `LICENSE.txt` is placed in each `<family>/` directory with full provenance det
 | RAVU | **LGPL-3.0** (trained weights) | bjin |
 | Real-CUGAN | MIT | bilibili |
 | Real-ESRGAN | BSD-3-Clause | Xintao Wang |
+| RIFE v4.x | MIT | Megvii, hzwer |
 | super-image (PAN, CARN, A2N, AWSRN, MSRN) | Apache-2.0 | Eugene Siow et al. |
 | waifu2x | MIT | nagadomi, nihui (ncnn topology) |
 | websr | MIT | sb2702, bloc97 |
