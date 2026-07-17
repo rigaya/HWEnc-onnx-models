@@ -6,7 +6,7 @@ Build tools for ONNX models used by `--vpp-onnx` and `--vpp-rife-ov` in
 QSVEnc / NVEnc / VCEEnc, plus `--vpp-stdeint` in QSVEnc.
 
 Generates 253 `--vpp-onnx` models (241 FP32 + 12 INT8) across 27 families,
-10 RIFE models, and one ST-DeInt model with a single command: download →
+10 RIFE models, and two ST-DeInt models with a single command: download →
 convert or extract → INT8 quantize → manifests.
 
 ## Quick Start
@@ -115,7 +115,7 @@ output/
 | realcugan | PyTorch .pth | 12 | 2 | 14 |
 | realesrgan | PyTorch .pth | 8 | 2 | 10 |
 | rife | upstream ONNX archive | 10 | - | 10 |
-| stdeint | PyTorch .pt | 1 | - | 1 |
+| stdeint | PyTorch .pt | 2 | - | 2 |
 | srmd | PyTorch .pth | 6 | - | 6 |
 | superimage | PyTorch .pth | 24 | - | 24 |
 | waifu2x | JSON weights | 34 | - | 34 |
@@ -136,6 +136,8 @@ HDRTVNet++ SDR-to-HDR models are converted from the official pretrained weights.
 ST-DeInt is converted from the official pretrained weights into a dynamic H/W
 model using an equivalent GridSample implementation and half-height, 6-channel
 restoration output. Weaving is performed by QSVEnc after inference.
+`stdeint_fast.onnx` is generated with `--no-deform`; it removes deform alignment
+and GridSample for fast fp16 inference with a small quality tradeoff.
 
 ### JSON Weights
 Builds ONNX graphs from waifu2x and websr JSON weight files.
@@ -168,7 +170,7 @@ Generates INT8 ONNX from FP32 ONNX using nncf (Neural Network Compression Framew
 | `setup_env.bat` | Python venv setup (Windows) |
 | `quantize_int8.py` | INT8 quantization via nncf |
 | `export_*.py` | Per-family FP32 ONNX conversion scripts |
-| `export_stdeint.py` | Converts the official ST-DeInt weights to a half-height, 6-channel restoration-output ONNX model |
+| `export_stdeint.py` | Converts the official ST-DeInt weights to full and `--no-deform` fast, half-height 6-channel restoration-output ONNX models |
 | `extract_rife.py` | Extracts RIFE ONNX from the official archive and verifies SHA-256 and I/O shapes |
 | `convert_edsr.py` | EDSR conversion script |
 | `convert_ravu_*.py` | RAVU conversion scripts (4 files, called by export_ravu.py) |

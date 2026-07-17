@@ -182,6 +182,7 @@ CONVERT_COMMANDS = [
     ("export_hdrtvnetpp.py", ["--repo-root", "{repos}/HDRTVNet-plus", "--weights-dir", "{repos}/HDRTVNet-plus/pretrained_models", "--output", "{out}/hdrtvnetpp"]),
     # --- デインターレース用の公式学習済み重み ---
     ("export_stdeint.py", ["--source-dir", "{repos}/ST-DeInt", "--output", "{out}/stdeint"]),
+    ("export_stdeint.py", ["--source-dir", "{repos}/ST-DeInt", "--output", "{out}/stdeint", "--no-deform"]),
     # RIFE is distributed as verified prebuilt ONNX files in the upstream archive.
     ("extract_rife.py", ["--archive", "{work}/rife_v8.7z", "--output", "{out}/rife"]),
 ]
@@ -667,13 +668,14 @@ def generate_stdeint_ov_models_json(output: Path, dry_run: bool) -> None:
     print("[PHASE 4] generate stdeint_ov_models.json")
     output_path = output / "stdeint_ov_models.json"
     if dry_run:
-        print(f"  [SCAN] {output}/stdeint/stdeint.onnx -> {output_path}")
+        print(f"  [SCAN] {output}/stdeint/stdeint*.onnx -> {output_path}")
         return
 
-    model_path = output / "stdeint" / "stdeint.onnx"
     models = {}
-    if model_path.is_file():
-        models["stdeint"] = {"path": str(model_path.relative_to(output).as_posix())}
+    for model_name in ("stdeint", "stdeint_fast"):
+        model_path = output / "stdeint" / f"{model_name}.onnx"
+        if model_path.is_file():
+            models[model_name] = {"path": str(model_path.relative_to(output).as_posix())}
 
     manifest = {"version": 1, "models": models}
     try:

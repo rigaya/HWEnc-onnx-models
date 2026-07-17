@@ -4,7 +4,7 @@ QSVEnc / NVEnc / VCEEnc の `--vpp-onnx` と `--vpp-rife-ov`、QSVEnc の
 `--vpp-stdeint` で使用する ONNX モデルのビルドツール群。
 
 `--vpp-onnx` 向け27ファミリー・253モデル（FP32 241 + INT8 12）、RIFE 10モデル、
-ST-DeInt 1モデルを、1コマンドでダウンロード → 変換または展開 → INT8量子化 →
+ST-DeInt 2モデルを、1コマンドでダウンロード → 変換または展開 → INT8量子化 →
 マニフェスト生成まで実行する。
 
 ## クイックスタート
@@ -113,7 +113,7 @@ output/
 | realcugan | PyTorch .pth | 12 | 2 | 14 |
 | realesrgan | PyTorch .pth | 8 | 2 | 10 |
 | rife | upstream ONNX archive | 10 | - | 10 |
-| stdeint | PyTorch .pt | 1 | - | 1 |
+| stdeint | PyTorch .pt | 2 | - | 2 |
 | srmd | PyTorch .pth | 6 | - | 6 |
 | superimage | PyTorch .pth | 24 | - | 24 |
 | waifu2x | JSON weights | 34 | - | 34 |
@@ -133,6 +133,7 @@ KAIR, EDSR, Real-ESRGAN, Real-CUGAN, BSRGAN 等の学習済みモデルを `torc
 HDRTVNet++ の SDR→HDR モデルは公式の学習済み重みから変換。
 ST-DeInt は公式の学習済み重みから、GridSampleによる等価な動的H/W・半高6ch復元出力モデルへ変換。
 weaveは推論後にQSVEnc側で行う。
+`stdeint_fast.onnx` は `--no-deform` でdeform alignmentとGridSampleを除去し、わずかな画質差と引き換えにfp16推論を高速化する。
 
 ### JSON ウェイト
 waifu2x, websr の JSON 形式ウェイトから ONNX グラフを構築。
@@ -165,7 +166,7 @@ nncf (Neural Network Compression Framework) の Post-Training Quantization で F
 | `setup_env.bat` | Python venv セットアップ (Windows) |
 | `quantize_int8.py` | nncf による INT8 量子化 |
 | `export_*.py` | 各ファミリーの FP32 ONNX 変換スクリプト |
-| `export_stdeint.py` | ST-DeInt公式重みを半高6chの欠落行復元出力ONNXへ変換 |
+| `export_stdeint.py` | ST-DeInt公式重みを通常版と `--no-deform` 高速版の半高6ch復元出力ONNXへ変換 |
 | `extract_rife.py` | 公式アーカイブからRIFE ONNXを展開し、SHA-256と入出力形状を検証 |
 | `convert_edsr.py` | EDSR 変換スクリプト |
 | `convert_ravu_*.py` | RAVU 変換スクリプト (4本、export_ravu.py から呼出) |
