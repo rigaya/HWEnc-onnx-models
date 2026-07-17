@@ -2,9 +2,12 @@
 
 [**日本語版はこちら / Japanese**](README.ja.md)
 
-Build tools for ONNX models used by `--vpp-onnx` in QSVEnc / NVEnc / VCEEnc and `--vpp-rife-ov` in QSVEnc.
+Build tools for ONNX models used by `--vpp-onnx` and `--vpp-rife-ov` in
+QSVEnc / NVEnc / VCEEnc, plus `--vpp-stdeint` in QSVEnc.
 
-Generates 253 `--vpp-onnx` models (241 FP32 + 12 INT8) across 27 families, plus 10 QSVEnc-only RIFE models, with a single command: download → convert or extract → INT8 quantize → models.json.
+Generates 253 `--vpp-onnx` models (241 FP32 + 12 INT8) across 27 families,
+10 RIFE models, and one ST-DeInt model with a single command: download →
+convert or extract → INT8 quantize → manifests.
 
 ## Quick Start
 
@@ -14,7 +17,7 @@ Generates 253 `--vpp-onnx` models (241 FP32 + 12 INT8) across 27 families, plus 
 # 1. Set up venv (first time only)
 bash setup_env.sh
 
-# 2. Full build (download + convert + INT8 quantization + models.json)
+# 2. Full build (download + convert + INT8 quantization + manifests)
 .venv_onnx/bin/python run_all.py --output /path/to/output
 
 # 3. Dry run (print plan without executing)
@@ -74,11 +77,14 @@ output/
 ├── ravu/
 ├── realcugan/
 ├── realesrgan/
-├── rife/               # QSVEnc --vpp-rife-ov only; excluded from models.json
+├── rife/               # --vpp-rife-ov models; excluded from models.json
+├── stdeint/            # --vpp-stdeint model; excluded from models.json
 ├── srmd/
 ├── waifu2x/
 ├── websr/
-└── models.json         # Model manifest
+├── models.json              # --vpp-onnx model manifest
+├── rife_ov_models.json      # --vpp-rife-ov model manifest
+└── stdeint_ov_models.json   # --vpp-stdeint model manifest
 ```
 
 ## Model Families
@@ -108,12 +114,13 @@ output/
 | ravu | Python weights | 21 | - | 21 |
 | realcugan | PyTorch .pth | 12 | 2 | 14 |
 | realesrgan | PyTorch .pth | 8 | 2 | 10 |
-| rife (QSVEnc only) | upstream ONNX archive | 10 | - | 10 |
+| rife | upstream ONNX archive | 10 | - | 10 |
+| stdeint | PyTorch .pt | 1 | - | 1 |
 | srmd | PyTorch .pth | 6 | - | 6 |
 | superimage | PyTorch .pth | 24 | - | 24 |
 | waifu2x | JSON weights | 34 | - | 34 |
 | websr | JSON weights | 9 | - | 9 |
-| **Total** | | **241** | **12** | **253** |
+| **--vpp-onnx Total** | | **241** | **12** | **253** |
 
 ## Conversion Source Types
 
@@ -126,6 +133,8 @@ Converts trained weights from bjin/mpv-prescalers via `torch.onnx.export`.
 ### PyTorch .pth Weights
 Converts pretrained models from KAIR, EDSR, Real-ESRGAN, Real-CUGAN, BSRGAN, etc. via `torch.onnx.export`.
 HDRTVNet++ SDR-to-HDR models are converted from the official pretrained weights.
+ST-DeInt is converted from the official pretrained weights into a dynamic H/W
+model using an equivalent GridSample implementation and 6-channel weave output.
 
 ### JSON Weights
 Builds ONNX graphs from waifu2x and websr JSON weight files.
@@ -153,11 +162,12 @@ Generates INT8 ONNX from FP32 ONNX using nncf (Neural Network Compression Framew
 
 | File | Description |
 |------|-------------|
-| `run_all.py` | Integrated runner (download → convert → INT8 → models.json) |
+| `run_all.py` | Integrated runner (download → convert → INT8 → manifests) |
 | `setup_env.sh` | Python venv setup (Linux) |
 | `setup_env.bat` | Python venv setup (Windows) |
 | `quantize_int8.py` | INT8 quantization via nncf |
-| `export_*.py` | Per-family FP32 ONNX conversion scripts (21 files) |
+| `export_*.py` | Per-family FP32 ONNX conversion scripts |
+| `export_stdeint.py` | Converts the official ST-DeInt weights to a 6-channel weave-output ONNX model |
 | `extract_rife.py` | Extracts RIFE ONNX from the official archive and verifies SHA-256 and I/O shapes |
 | `convert_edsr.py` | EDSR conversion script |
 | `convert_ravu_*.py` | RAVU conversion scripts (4 files, called by export_ravu.py) |
@@ -186,6 +196,7 @@ A `LICENSE.txt` is placed in each `<family>/` directory with full provenance det
 | Real-CUGAN | MIT | bilibili |
 | Real-ESRGAN | BSD-3-Clause | Xintao Wang |
 | RIFE v4.x | MIT | Megvii, hzwer |
+| ST-DeInt | **Unknown** | Yuqing Liu et al. |
 | super-image (PAN, CARN, A2N, AWSRN, MSRN) | Apache-2.0 | Eugene Siow et al. |
 | waifu2x | MIT | nagadomi, nihui (ncnn topology) |
 | websr | MIT | sb2702, bloc97 |

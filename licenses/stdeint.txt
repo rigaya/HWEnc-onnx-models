@@ -1,0 +1,9 @@
+ST-DeInt ONNXモデル
+====================
+
+Models:   stdeint
+Source:   https://github.com/yuqing-liu-dut/ST-DeInt
+Paper:    Spatial-Temporal Correlation Learning for Real-Time Video Deinterlacing
+Authors:  Yuqing Liu, Xinfeng Zhang, Shanshe Wang, Siwei Ma, Wen Gao
+
+License:  Unknown

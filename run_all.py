@@ -65,6 +65,7 @@ REPOS = [
     ("FBCNN", "https://github.com/jiaxi-jiang/FBCNN/archive/refs/heads/main.zip", "_work/repos/FBCNN"),
     ("mpv-prescalers", "https://github.com/bjin/mpv-prescalers/archive/refs/heads/source.zip", "_work/repos/mpv-prescalers"),
     ("HDRTVNet-plus", "https://github.com/xiaom233/HDRTVNet-plus/archive/refs/heads/main.zip", "_work/repos/HDRTVNet-plus"),
+    ("ST-DeInt", "https://github.com/yuqing-liu-dut/ST-DeInt/archive/refs/heads/main.zip", "_work/repos/ST-DeInt"),
 ]
 
 REALCUGAN_WEIGHTS_URL = "https://github.com/bilibili/ailab/releases/download/Real-CUGAN/updated_weights.zip"
@@ -179,6 +180,8 @@ CONVERT_COMMANDS = [
 
     # --- SDR-to-HDR (HDRTVNet++ の学習済み重み, MIT) ---
     ("export_hdrtvnetpp.py", ["--repo-root", "{repos}/HDRTVNet-plus", "--weights-dir", "{repos}/HDRTVNet-plus/pretrained_models", "--output", "{out}/hdrtvnetpp"]),
+    # --- デインターレース用の公式学習済み重み ---
+    ("export_stdeint.py", ["--source-dir", "{repos}/ST-DeInt", "--output", "{out}/stdeint"]),
     # RIFE is distributed as verified prebuilt ONNX files in the upstream archive.
     ("extract_rife.py", ["--archive", "{work}/rife_v8.7z", "--output", "{out}/rife"]),
 ]
@@ -564,6 +567,7 @@ LICENSE_MAP = {
     "realcugan": "realcugan.txt",
     "realesrgan": "realesrgan.txt",
     "rife": "rife.txt",
+    "stdeint": "stdeint.txt",
     "srmd": "srmd.txt",
     "superimage": "superimage.txt",
     "waifu2x": "waifu2x.txt",
@@ -597,9 +601,8 @@ def install_licenses(output: Path, dry_run: bool) -> None:
 # Phase 4: models.json
 # ---------------------------------------------------------------------------
 
-# RIFE is used only by QSVEnc --vpp-rife-ov.  Its 11-channel input is not
-# compatible with the generic --vpp-onnx model manifest.
-SCAN_EXCLUDE = {"_work", "rife"}
+# RIFEとST-DeIntは専用フィルタ用なので、汎用models.jsonには登録しない。
+SCAN_EXCLUDE = {"_work", "rife", "stdeint"}
 
 
 def generate_models_json(output: Path, dry_run: bool) -> None:
@@ -637,6 +640,50 @@ def generate_models_json(output: Path, dry_run: bool) -> None:
         print(f"  [FAIL] models.json: {err}")
 
 
+def generate_rife_ov_models_json(output: Path, dry_run: bool) -> None:
+    print("[PHASE 4] generate rife_ov_models.json")
+    output_path = output / "rife_ov_models.json"
+    if dry_run:
+        print(f"  [SCAN] {output}/rife/*.onnx -> {output_path}")
+        return
+
+    models: dict[str, dict] = {}
+    for onnx_file in sorted((output / "rife").glob("*.onnx")):
+        # エンコーダCLIではモデル名内のドットを直接パスと判定するため、
+        # レジストリのキーではアンダースコアへ置換する。
+        key = onnx_file.stem.lower().replace(".", "_")
+        models[key] = {"path": str(onnx_file.relative_to(output).as_posix())}
+
+    manifest = {"version": 1, "models": models}
+    try:
+        output_path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+        print(f"  [OK] {output_path}")
+        print(f"  models: {len(models)}")
+    except Exception as err:
+        print(f"  [FAIL] rife_ov_models.json: {err}")
+
+
+def generate_stdeint_ov_models_json(output: Path, dry_run: bool) -> None:
+    print("[PHASE 4] generate stdeint_ov_models.json")
+    output_path = output / "stdeint_ov_models.json"
+    if dry_run:
+        print(f"  [SCAN] {output}/stdeint/stdeint.onnx -> {output_path}")
+        return
+
+    model_path = output / "stdeint" / "stdeint.onnx"
+    models = {}
+    if model_path.is_file():
+        models["stdeint"] = {"path": str(model_path.relative_to(output).as_posix())}
+
+    manifest = {"version": 1, "models": models}
+    try:
+        output_path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+        print(f"  [OK] {output_path}")
+        print(f"  models: {len(models)}")
+    except Exception as err:
+        print(f"  [FAIL] stdeint_ov_models.json: {err}")
+
+
 # ---------------------------------------------------------------------------
 
 def main() -> int:
@@ -668,6 +715,8 @@ def main() -> int:
 
     install_licenses(output, args.dry_run)
     generate_models_json(output, args.dry_run)
+    generate_rife_ov_models_json(output, args.dry_run)
+    generate_stdeint_ov_models_json(output, args.dry_run)
     print("[RUN_ALL] done")
     return 0
 

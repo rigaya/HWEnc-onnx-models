@@ -1,8 +1,11 @@
 # HWEnc-onnx-models
 
-QSVEnc / NVEnc / VCEEnc の `--vpp-onnx` と、QSVEnc の `--vpp-rife-ov` で使用する ONNX モデルのビルドツール群。
+QSVEnc / NVEnc / VCEEnc の `--vpp-onnx` と `--vpp-rife-ov`、QSVEnc の
+`--vpp-stdeint` で使用する ONNX モデルのビルドツール群。
 
-`--vpp-onnx` 向け27ファミリー・253モデル（FP32 241 + INT8 12）と、QSVEnc専用RIFE 10モデルを、1コマンドでダウンロード → 変換または展開 → INT8量子化 → models.json生成まで実行する。
+`--vpp-onnx` 向け27ファミリー・253モデル（FP32 241 + INT8 12）、RIFE 10モデル、
+ST-DeInt 1モデルを、1コマンドでダウンロード → 変換または展開 → INT8量子化 →
+マニフェスト生成まで実行する。
 
 ## クイックスタート
 
@@ -12,7 +15,7 @@ QSVEnc / NVEnc / VCEEnc の `--vpp-onnx` と、QSVEnc の `--vpp-rife-ov` で使
 # 1. venv セットアップ（初回のみ）
 bash setup_env.sh
 
-# 2. フルビルド（ダウンロード + 変換 + INT8 量子化 + models.json 生成）
+# 2. フルビルド（ダウンロード + 変換 + INT8 量子化 + マニフェスト生成）
 .venv_onnx/bin/python run_all.py --output /path/to/output
 
 # 3. ドライラン（実際にはダウンロード・変換しない）
@@ -72,11 +75,14 @@ output/
 ├── ravu/
 ├── realcugan/
 ├── realesrgan/
-├── rife/               # QSVEnc --vpp-rife-ov 専用（models.jsonには未登録）
+├── rife/               # --vpp-rife-ov 用（models.jsonには未登録）
+├── stdeint/            # --vpp-stdeint 用（models.jsonには未登録）
 ├── srmd/
 ├── waifu2x/
 ├── websr/
-└── models.json         # モデルマニフェスト
+├── models.json              # --vpp-onnx 用モデルマニフェスト
+├── rife_ov_models.json      # --vpp-rife-ov 用モデルマニフェスト
+└── stdeint_ov_models.json   # --vpp-stdeint 用モデルマニフェスト
 ```
 
 ## モデル一覧
@@ -106,12 +112,13 @@ output/
 | ravu | Python weights | 21 | - | 21 |
 | realcugan | PyTorch .pth | 12 | 2 | 14 |
 | realesrgan | PyTorch .pth | 8 | 2 | 10 |
-| rife (QSVEnc専用) | upstream ONNX archive | 10 | - | 10 |
+| rife | upstream ONNX archive | 10 | - | 10 |
+| stdeint | PyTorch .pt | 1 | - | 1 |
 | srmd | PyTorch .pth | 6 | - | 6 |
 | superimage | PyTorch .pth | 24 | - | 24 |
 | waifu2x | JSON weights | 34 | - | 34 |
 | websr | JSON weights | 9 | - | 9 |
-| **合計** | | **241** | **12** | **253** |
+| **--vpp-onnx 合計** | | **241** | **12** | **253** |
 
 ## 変換ソース種別
 
@@ -124,6 +131,7 @@ bjin/mpv-prescalers の学習済み重みから `torch.onnx.export` で変換。
 ### PyTorch .pth ウェイト
 KAIR, EDSR, Real-ESRGAN, Real-CUGAN, BSRGAN 等の学習済みモデルを `torch.onnx.export` で変換。
 HDRTVNet++ の SDR→HDR モデルは公式の学習済み重みから変換。
+ST-DeInt は公式の学習済み重みから、GridSampleによる等価な動的H/Wモデルへ変換。
 
 ### JSON ウェイト
 waifu2x, websr の JSON 形式ウェイトから ONNX グラフを構築。
@@ -151,11 +159,12 @@ nncf (Neural Network Compression Framework) の Post-Training Quantization で F
 
 | ファイル | 役割 |
 |---------|------|
-| `run_all.py` | 統合ランナー（ダウンロード → 変換 → INT8 → models.json） |
+| `run_all.py` | 統合ランナー（ダウンロード → 変換 → INT8 → マニフェスト） |
 | `setup_env.sh` | Python venv セットアップ (Linux) |
 | `setup_env.bat` | Python venv セットアップ (Windows) |
 | `quantize_int8.py` | nncf による INT8 量子化 |
-| `export_*.py` | 各ファミリーの FP32 ONNX 変換スクリプト (21本) |
+| `export_*.py` | 各ファミリーの FP32 ONNX 変換スクリプト |
+| `export_stdeint.py` | ST-DeInt公式重みをweave込み6ch出力ONNXへ変換 |
 | `extract_rife.py` | 公式アーカイブからRIFE ONNXを展開し、SHA-256と入出力形状を検証 |
 | `convert_edsr.py` | EDSR 変換スクリプト |
 | `convert_ravu_*.py` | RAVU 変換スクリプト (4本、export_ravu.py から呼出) |
@@ -184,6 +193,7 @@ nncf (Neural Network Compression Framework) の Post-Training Quantization で F
 | Real-CUGAN | MIT | bilibili |
 | Real-ESRGAN | BSD-3-Clause | Xintao Wang |
 | RIFE v4.x | MIT | Megvii, hzwer |
+| ST-DeInt | **Unknown** | Yuqing Liuほか |
 | super-image (PAN, CARN, A2N, AWSRN, MSRN) | Apache-2.0 | Eugene Siow ほか |
 | waifu2x | MIT | nagadomi, nihui (ncnnトポロジー) |
 | websr | MIT | sb2702, bloc97 |
