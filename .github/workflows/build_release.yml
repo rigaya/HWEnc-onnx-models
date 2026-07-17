@@ -1,0 +1,111 @@
+name: Build ONNX Model Archives
+
+on:
+  push:
+    branches:
+      - master
+    tags:
+      - '*'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: build-onnx-models-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build and package ONNX models
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    outputs:
+      version_name: ${{ steps.meta.outputs.version_name }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set version name
+        id: meta
+        run: |
+          set -euo pipefail
+          REVCOUNT=$(git rev-list --count HEAD)
+          if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
+            VERSION="${GITHUB_REF#refs/tags/}"
+          else
+            VERSION="r${REVCOUNT}"
+          fi
+          echo "version_name=${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "Version: ${VERSION}"
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Free disk space
+        run: |
+          set -euo pipefail
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL || true
+          df -h
+
+      - name: Setup venv and dependencies
+        run: bash setup_env.sh
+
+      - name: Build ONNX models
+        run: |
+          set -euo pipefail
+          mkdir -p output dist
+          .venv_onnx/bin/python run_all.py --output output --jobs 2
+
+      - name: Remove intermediate downloads
+        run: |
+          set -euo pipefail
+          # Keep only converted models for packaging / size.
+          rm -rf output/_work
+          rm -rf .venv_onnx
+          df -h
+          du -sh output output/* 2>/dev/null | sort -h | tail -n 40
+
+      - name: Create archives and hashes
+        run: |
+          set -euo pipefail
+          python3 package_archives.py \
+            --input output \
+            --dist dist \
+            --version "${{ steps.meta.outputs.version_name }}"
+
+      - name: Upload workflow artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: onnx_models_${{ steps.meta.outputs.version_name }}
+          path: |
+            dist/onnx_models_${{ steps.meta.outputs.version_name }}_main.zip
+            dist/onnx_models_${{ steps.meta.outputs.version_name }}_fbcnn_nafnet.zip
+            dist/*.sha256
+            dist/SHA256SUMS.txt
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Upload Release Asset
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          files: |
+            dist/onnx_models_${{ steps.meta.outputs.version_name }}_main.zip
+            dist/onnx_models_${{ steps.meta.outputs.version_name }}_fbcnn_nafnet.zip
+            dist/onnx_models_${{ steps.meta.outputs.version_name }}_main.zip.sha256
+            dist/onnx_models_${{ steps.meta.outputs.version_name }}_fbcnn_nafnet.zip.sha256
+            dist/SHA256SUMS.txt
+          body: |
+            `onnx_models_${{ steps.meta.outputs.version_name }}_main.zip` is the main archive.
+            `onnx_models_${{ steps.meta.outputs.version_name }}_fbcnn_nafnet.zip` is the extra archive for fbcnn and nafnet (split for the GitHub 2GB release asset limit).
+
+            Extract both archives into the same directory for `--vpp-onnx-model-dir`.
+            ST-DeInt is not included in release archives (upstream license: Unknown); build it locally with `run_all.py` if needed.
+          fail_on_unmatched_files: true
