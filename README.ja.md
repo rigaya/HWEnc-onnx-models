@@ -131,7 +131,8 @@ bjin/mpv-prescalers の学習済み重みから `torch.onnx.export` で変換。
 ### PyTorch .pth ウェイト
 KAIR, EDSR, Real-ESRGAN, Real-CUGAN, BSRGAN 等の学習済みモデルを `torch.onnx.export` で変換。
 HDRTVNet++ の SDR→HDR モデルは公式の学習済み重みから変換。
-ST-DeInt は公式の学習済み重みから、GridSampleによる等価な動的H/Wモデルへ変換。
+ST-DeInt は公式の学習済み重みから、GridSampleによる等価な動的H/W・半高6ch復元出力モデルへ変換。
+weaveは推論後にQSVEnc側で行う。
 
 ### JSON ウェイト
 waifu2x, websr の JSON 形式ウェイトから ONNX グラフを構築。
@@ -164,7 +165,7 @@ nncf (Neural Network Compression Framework) の Post-Training Quantization で F
 | `setup_env.bat` | Python venv セットアップ (Windows) |
 | `quantize_int8.py` | nncf による INT8 量子化 |
 | `export_*.py` | 各ファミリーの FP32 ONNX 変換スクリプト |
-| `export_stdeint.py` | ST-DeInt公式重みをweave込み6ch出力ONNXへ変換 |
+| `export_stdeint.py` | ST-DeInt公式重みを半高6chの欠落行復元出力ONNXへ変換 |
 | `extract_rife.py` | 公式アーカイブからRIFE ONNXを展開し、SHA-256と入出力形状を検証 |
 | `convert_edsr.py` | EDSR 変換スクリプト |
 | `convert_ravu_*.py` | RAVU 変換スクリプト (4本、export_ravu.py から呼出) |

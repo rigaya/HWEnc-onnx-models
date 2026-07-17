@@ -134,7 +134,8 @@ Converts trained weights from bjin/mpv-prescalers via `torch.onnx.export`.
 Converts pretrained models from KAIR, EDSR, Real-ESRGAN, Real-CUGAN, BSRGAN, etc. via `torch.onnx.export`.
 HDRTVNet++ SDR-to-HDR models are converted from the official pretrained weights.
 ST-DeInt is converted from the official pretrained weights into a dynamic H/W
-model using an equivalent GridSample implementation and 6-channel weave output.
+model using an equivalent GridSample implementation and half-height, 6-channel
+restoration output. Weaving is performed by QSVEnc after inference.
 
 ### JSON Weights
 Builds ONNX graphs from waifu2x and websr JSON weight files.
@@ -167,7 +168,7 @@ Generates INT8 ONNX from FP32 ONNX using nncf (Neural Network Compression Framew
 | `setup_env.bat` | Python venv setup (Windows) |
 | `quantize_int8.py` | INT8 quantization via nncf |
 | `export_*.py` | Per-family FP32 ONNX conversion scripts |
-| `export_stdeint.py` | Converts the official ST-DeInt weights to a 6-channel weave-output ONNX model |
+| `export_stdeint.py` | Converts the official ST-DeInt weights to a half-height, 6-channel restoration-output ONNX model |
 | `extract_rife.py` | Extracts RIFE ONNX from the official archive and verifies SHA-256 and I/O shapes |
 | `convert_edsr.py` | EDSR conversion script |
 | `convert_ravu_*.py` | RAVU conversion scripts (4 files, called by export_ravu.py) |

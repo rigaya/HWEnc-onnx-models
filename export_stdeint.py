@@ -44,8 +44,8 @@ class GridSampleConvOffset2D(nn.Conv2d):
         return sampled.view(batch, channels, height, width)
 
 
-class WeaveExportWrapper(nn.Module):
-    """欠落行予測を元フィールドと weave し、2 フレームを 6ch で返す。"""
+class RestorationExportWrapper(nn.Module):
+    """2フィールドの欠落行予測を半高の6chで返す。"""
 
     def __init__(self, model):
         super().__init__()
@@ -53,14 +53,10 @@ class WeaveExportWrapper(nn.Module):
 
     def forward(self, input_frame):
         restore_a, restore_b = self.model(input_frame)
-        upper = input_frame[:, :, 0::2, :]
-        lower = input_frame[:, :, 1::2, :]
-        frame_a = torch.stack((upper, restore_a), dim=3).flatten(2, 3)
-        frame_b = torch.stack((restore_b, lower), dim=3).flatten(2, 3)
-        return torch.cat((frame_a, frame_b), dim=1)
+        return torch.cat((restore_a, restore_b), dim=1)
 
 
-def load_model(source_dir: Path, checkpoint: Path) -> WeaveExportWrapper:
+def load_model(source_dir: Path, checkpoint: Path) -> RestorationExportWrapper:
     source_dir = source_dir.resolve()
     if not (source_dir / "model.py").is_file():
         raise FileNotFoundError(f"model.py が見つかりません: {source_dir}")
@@ -82,11 +78,11 @@ def load_model(source_dir: Path, checkpoint: Path) -> WeaveExportWrapper:
     if not isinstance(model.alignment[0], nn.Conv2d):
         raise TypeError("ST-DeInt の alignment[0] が Conv2d 互換ではありません")
     model.alignment[0] = GridSampleConvOffset2D(model.alignment[0])
-    return WeaveExportWrapper(model).eval()
+    return RestorationExportWrapper(model).eval()
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="ST-DeInt を 6ch weave 出力 ONNX へ変換する")
+    parser = argparse.ArgumentParser(description="ST-DeInt を半高6ch復元出力 ONNX へ変換する")
     parser.add_argument("--source-dir", required=True, type=Path,
                         help="公式 ST-DeInt の model.py/deform_conv.py のあるディレクトリ")
     parser.add_argument("--checkpoint", type=Path,
@@ -109,25 +105,25 @@ def main() -> None:
     model = load_model(args.source_dir, checkpoint)
     dummy = torch.rand(1, 3, args.height, args.width)
     with torch.no_grad():
-        expected_shape = (1, 6, args.height, args.width)
+        expected_shape = (1, 6, args.height // 2, args.width)
         if tuple(model(dummy).shape) != expected_shape:
             raise RuntimeError(f"予期しない出力形状: {tuple(model(dummy).shape)}")
 
     dynamic_axes = None if args.static_shape else {
         "input": {2: "height", 3: "width"},
-        "frames_ab": {2: "height", 3: "width"},
+        "restorations": {2: "half_height", 3: "width"},
     }
     args.output.mkdir(parents=True, exist_ok=True)
     output = (args.output / "stdeint.onnx").resolve()
     export_onnx(
         model, dummy, str(output), opset_version=16, do_constant_folding=True,
-        input_names=["input"], output_names=["frames_ab"], dynamic_axes=dynamic_axes)
+        input_names=["input"], output_names=["restorations"], dynamic_axes=dynamic_axes)
     exported = onnx.load(output)
     onnx.checker.check_model(exported)
     if not any(node.op_type == "GridSample" for node in exported.graph.node):
         raise RuntimeError("出力 ONNX に GridSample が含まれていません")
     print(f"exported: {output}")
-    print(f"input: (1, 3, H, W), output: (1, 6, H, W), dynamic: {not args.static_shape}")
+    print(f"input: (1, 3, H, W), output: (1, 6, H/2, W), dynamic: {not args.static_shape}")
 
 
 if __name__ == "__main__":
