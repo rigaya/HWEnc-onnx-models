@@ -66,6 +66,7 @@ REPOS = [
     ("mpv-prescalers", "https://github.com/bjin/mpv-prescalers/archive/refs/heads/source.zip", "_work/repos/mpv-prescalers"),
     ("HDRTVNet-plus", "https://github.com/xiaom233/HDRTVNet-plus/archive/refs/heads/main.zip", "_work/repos/HDRTVNet-plus"),
     ("ST-DeInt", "https://github.com/yuqing-liu-dut/ST-DeInt/archive/refs/heads/main.zip", "_work/repos/ST-DeInt"),
+    ("BasicSR", "https://github.com/XPixelGroup/BasicSR/archive/refs/tags/v1.4.2.zip", "_work/repos/BasicSR"),
 ]
 
 REALCUGAN_WEIGHTS_URL = "https://github.com/bilibili/ailab/releases/download/Real-CUGAN/updated_weights.zip"
@@ -96,6 +97,13 @@ FBCNN_RELEASES = [
 NAFNET_RELEASES = [
     (f"https://huggingface.co/nyanko7/nafnet-models/resolve/main/{filename}", f"_work/nafnet/{filename}")
     for filename in ("NAFNet-GoPro-width32.pth", "NAFNet-REDS-width64.pth", "NAFNet-SIDD-width32.pth", "NAFNet-SIDD-width64.pth")
+]
+
+EDVR_RELEASES = [
+    (
+        "https://download.openmmlab.com/mmediting/restorers/edvr/edvrm_x4_8x4_600k_reds_20210625-e29b71b5.pth",
+        "_work/edvr/edvrm_x4_8x4_600k_reds_20210625-e29b71b5.pth",
+    ),
 ]
 
 SUPERIMAGE_MODELS = [
@@ -156,6 +164,7 @@ CONVERT_COMMANDS = [
     ("export_realesrgan.py", ["--models-dir", "{work}/realesrgan", "--output", "{out}/realesrgan"]),
     ("export_fbcnn.py", ["--repo-root", "{repos}/FBCNN", "--weights-dir", "{work}/fbcnn", "--output", "{out}/fbcnn"]),
     ("export_nafnet.py", ["--weights-dir", "{work}/nafnet", "--output", "{out}/nafnet"]),
+    ("export_edvr.py", ["--repo-root", "{repos}/BasicSR", "--weights", "{work}/edvr/edvrm_x4_8x4_600k_reds_20210625-e29b71b5.pth", "--output", "{out}/edvr"]),
     ("export_superimage.py", ["--repo-root", str(SCRIPT_DIR), "--weights-dir", "{work}/superimage", "--output", "{out}/superimage"]),
     ("export_bsrgan.py", ["--repo-root", "{repos}/KAIR", "--weights-dir", "{repos}/KAIR/model_zoo", "--output", "{out}/bsrgan"]),
     ("export_dpsr.py", ["--repo-root", "{repos}/KAIR", "--weights-dir", "{repos}/KAIR/model_zoo", "--output", "{out}/dpsr"]),
@@ -313,6 +322,10 @@ def download_phase(output: Path, dry_run: bool) -> None:
 
     print("  Downloading FBCNN, NAFNet, and super-image weights...")
     for url, rel_dest in FBCNN_RELEASES + NAFNET_RELEASES + SUPERIMAGE_RELEASES:
+        download_file(url, output / rel_dest, dry_run)
+
+    print("  Downloading EDVR-M weights...")
+    for url, rel_dest in EDVR_RELEASES:
         download_file(url, output / rel_dest, dry_run)
 
     print("  Downloading EDSR baseline weights...")
@@ -555,6 +568,7 @@ LICENSE_MAP = {
     "dncnn": "dncnn.txt",
     "dpsr": "dpsr.txt",
     "drunet": "drunet.txt",
+    "edvr": "edvr.txt",
     "esrgan": "esrgan.txt",
     "edsr": "edsr.txt",
     "fdncnn": "fdncnn.txt",
@@ -627,6 +641,8 @@ def generate_models_json(output: Path, dry_run: bool) -> None:
         entry = {"path": str(rel.as_posix())}
         if rel.parts[0] == "nnedi3":
             entry["fp32"] = True
+        if rel.parts[0] == "edvr":
+            entry["frames"] = 5
         if rel.parts[0] == "hdrtvnetpp":
             entry["colorspace"] = "rgb"
             entry["colormatrix_out"] = "bt2020nc"

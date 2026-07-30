@@ -1,0 +1,19 @@
+EDVR-M ONNXモデル
+==================
+
+Models:   edvrm_x4_128x128_frames5, edvrm_x4_160x88_frames5
+Source:   https://github.com/XPixelGroup/BasicSR
+Weights:  https://download.openmmlab.com/mmediting/restorers/edvr/
+          edvrm_x4_8x4_600k_reds_20210625-e29b71b5.pth
+Paper:    EDVR: Video Restoration with Enhanced Deformable Convolutional Networks
+Authors:  Xintao Wang, Kelvin C.K. Chan, Ke Yu, Chao Dong, Chen Change Loy
+
+License:  Apache License 2.0
+Copyright 2018-2020 BasicSR Authors
+
+MMagicで公開されたREDS学習済み重みをBasicSR EDVR-Mの同一構造へキー変換し、
+標準ONNX演算へ変換している。モデルは5フレームのRGBをチャンネル方向へ並べた
+[1, 15, H, W]を入力とし、中央フレームの4倍超解像結果を出力する。
+
+Apache License 2.0全文:
+https://www.apache.org/licenses/LICENSE-2.0

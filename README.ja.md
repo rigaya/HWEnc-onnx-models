@@ -3,7 +3,7 @@
 QSVEnc / NVEnc / VCEEnc の `--vpp-onnx` と `--vpp-rife-ov`、QSVEnc の
 `--vpp-stdeint` で使用する ONNX モデルのビルドツール群。
 
-`--vpp-onnx` 向け27ファミリー・253モデル（FP32 241 + INT8 12）、RIFE 10モデル、
+`--vpp-onnx` 向け28ファミリー・255モデル（FP32 243 + INT8 12）、RIFE 10モデル、
 ST-DeInt 2モデルを、1コマンドでダウンロード → 変換または展開 → INT8量子化 →
 マニフェスト生成まで実行する。
 
@@ -65,6 +65,7 @@ output/
 ├── dncnn/
 ├── dpsr/
 ├── drunet/
+├── edvr/               # QSVEnc/NVEnc --vpp-onnx frames=5 用
 ├── edsr/
 ├── esrgan/
 ├── fdncnn/
@@ -100,6 +101,7 @@ output/
 | dncnn | PyTorch .pth | 6 | - | 6 |
 | dpsr | PyTorch .pth | 4 | 1 | 5 |
 | drunet | PyTorch .pth | 4 | 1 | 5 |
+| edvr | PyTorch .pth | 2 | - | 2 |
 | edsr | PyTorch .pth | 3 | - | 3 |
 | esrgan | PyTorch .pth | 5 | - | 5 |
 | fdncnn | PyTorch .pth | 4 | - | 4 |
@@ -118,7 +120,7 @@ output/
 | superimage | PyTorch .pth | 24 | - | 24 |
 | waifu2x | JSON weights | 34 | - | 34 |
 | websr | JSON weights | 9 | - | 9 |
-| **--vpp-onnx 合計** | | **241** | **12** | **253** |
+| **--vpp-onnx 合計** | | **243** | **12** | **255** |
 
 ## 変換ソース種別
 
@@ -134,6 +136,12 @@ HDRTVNet++ の SDR→HDR モデルは公式の学習済み重みから変換。
 ST-DeInt は公式の学習済み重みから、GridSampleによる等価な動的H/W・半高6ch復元出力モデルへ変換。
 weaveは推論後にQSVEnc側で行う。
 `stdeint_fast.onnx` は `--no-deform` でdeform alignmentとGridSampleを除去し、わずかな画質差と引き換えにfp16推論を高速化する。
+
+EDVR-MはMMagicのREDS学習済み重みをBasicSRの同一構造へ変換し、5フレームを
+チャンネル方向へ並べた15ch入力の固定解像度ONNXとして出力する。QSVEnc/NVEncでは
+登録モデル名だけで`frames=5`が適用される。deformable convolutionの分解が空間形状へ
+依存するため、生成済みモデルは128x128および160x88入力専用。任意の4の倍数解像度は
+`export_edvr.py --size WIDTHxHEIGHT`で追加生成できる。
 
 ### JSON ウェイト
 waifu2x, websr の JSON 形式ウェイトから ONNX グラフを構築。
@@ -154,6 +162,7 @@ nncf (Neural Network Compression Framework) の Post-Training Quantization で F
 - SciPy
 - nncf
 - onnxruntime
+- deform-conv2d-onnx-exporter
 
 `setup_env.sh` (Linux) / `setup_env.bat` (Windows) が venv の作成と依存関係のインストールを行う。
 
@@ -167,6 +176,7 @@ nncf (Neural Network Compression Framework) の Post-Training Quantization で F
 | `quantize_int8.py` | nncf による INT8 量子化 |
 | `export_*.py` | 各ファミリーの FP32 ONNX 変換スクリプト |
 | `export_stdeint.py` | ST-DeInt公式重みを通常版と `--no-deform` 高速版の半高6ch復元出力ONNXへ変換 |
+| `export_edvr.py` | EDVR-M REDS x4を5フレーム・15ch入力の固定解像度ONNXへ変換 |
 | `extract_rife.py` | 公式アーカイブからRIFE ONNXを展開し、SHA-256と入出力形状を検証 |
 | `convert_edsr.py` | EDSR 変換スクリプト |
 | `convert_ravu_*.py` | RAVU 変換スクリプト (4本、export_ravu.py から呼出) |
@@ -186,6 +196,7 @@ nncf (Neural Network Compression Framework) の Post-Training Quantization で F
 | BSRGAN | MIT (KAIR) / Apache-2.0 (BSRGANリポジトリ) | Kai Zhang |
 | DnCNN, DPSR, DRUNet, ESRGAN, FDnCNN, FFDNet, SRMD | MIT | Kai Zhang (KAIR) |
 | EDSR | MIT | Sanghyun Son |
+| EDVR | Apache-2.0 | BasicSR Authors / OpenMMLab |
 | FSRCNNX | **GPL-3.0** (igvの学習済み重み) | igv, nessotrin, TianZerL |
 | HDRTVNet++ | MIT | Hoven Li |
 | FBCNN | Apache-2.0 | Jiaxi Jiang, Kai Zhang, Radu Timofte |

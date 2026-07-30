@@ -5,7 +5,7 @@
 Build tools for ONNX models used by `--vpp-onnx` and `--vpp-rife-ov` in
 QSVEnc / NVEnc / VCEEnc, plus `--vpp-stdeint` in QSVEnc.
 
-Generates 253 `--vpp-onnx` models (241 FP32 + 12 INT8) across 27 families,
+Generates 255 `--vpp-onnx` models (243 FP32 + 12 INT8) across 28 families,
 10 RIFE models, and two ST-DeInt models with a single command: download →
 convert or extract → INT8 quantize → manifests.
 
@@ -67,6 +67,7 @@ output/
 ├── dncnn/
 ├── dpsr/
 ├── drunet/
+├── edvr/               # QSVEnc/NVEnc --vpp-onnx frames=5
 ├── edsr/
 ├── esrgan/
 ├── fdncnn/
@@ -102,6 +103,7 @@ output/
 | dncnn | PyTorch .pth | 6 | - | 6 |
 | dpsr | PyTorch .pth | 4 | 1 | 5 |
 | drunet | PyTorch .pth | 4 | 1 | 5 |
+| edvr | PyTorch .pth | 2 | - | 2 |
 | edsr | PyTorch .pth | 3 | - | 3 |
 | esrgan | PyTorch .pth | 5 | - | 5 |
 | fdncnn | PyTorch .pth | 4 | - | 4 |
@@ -120,7 +122,7 @@ output/
 | superimage | PyTorch .pth | 24 | - | 24 |
 | waifu2x | JSON weights | 34 | - | 34 |
 | websr | JSON weights | 9 | - | 9 |
-| **--vpp-onnx Total** | | **241** | **12** | **253** |
+| **--vpp-onnx Total** | | **243** | **12** | **255** |
 
 ## Conversion Source Types
 
@@ -138,6 +140,13 @@ model using an equivalent GridSample implementation and half-height, 6-channel
 restoration output. Weaving is performed by QSVEnc after inference.
 `stdeint_fast.onnx` is generated with `--no-deform`; it removes deform alignment
 and GridSample for fast fp16 inference with a small quality tradeoff.
+
+EDVR-M is converted from the MMagic REDS checkpoint to the identical BasicSR
+architecture and exported as fixed-resolution, 15-channel models containing five
+RGB frames. QSVEnc/NVEnc apply `frames=5` from the registry automatically. The
+deformable-convolution decomposition depends on the spatial shape, so the release
+contains 128x128 and 160x88 inputs. Additional multiples-of-four can be generated
+with `export_edvr.py --size WIDTHxHEIGHT`.
 
 ### JSON Weights
 Builds ONNX graphs from waifu2x and websr JSON weight files.
@@ -158,6 +167,7 @@ Generates INT8 ONNX from FP32 ONNX using nncf (Neural Network Compression Framew
 - SciPy
 - nncf
 - onnxruntime
+- deform-conv2d-onnx-exporter
 
 `setup_env.sh` (Linux) or `setup_env.bat` (Windows) creates the venv and installs all dependencies.
 
@@ -171,6 +181,7 @@ Generates INT8 ONNX from FP32 ONNX using nncf (Neural Network Compression Framew
 | `quantize_int8.py` | INT8 quantization via nncf |
 | `export_*.py` | Per-family FP32 ONNX conversion scripts |
 | `export_stdeint.py` | Converts the official ST-DeInt weights to full and `--no-deform` fast, half-height 6-channel restoration-output ONNX models |
+| `export_edvr.py` | Converts EDVR-M REDS x4 to fixed-resolution, five-frame 15-channel ONNX models |
 | `extract_rife.py` | Extracts RIFE ONNX from the official archive and verifies SHA-256 and I/O shapes |
 | `convert_edsr.py` | EDSR conversion script |
 | `convert_ravu_*.py` | RAVU conversion scripts (4 files, called by export_ravu.py) |
@@ -190,6 +201,7 @@ A `LICENSE.txt` is placed in each `<family>/` directory with full provenance det
 | BSRGAN | MIT (KAIR) / Apache-2.0 (BSRGAN repo) | Kai Zhang |
 | DnCNN, DPSR, DRUNet, ESRGAN, FDnCNN, FFDNet, SRMD | MIT | Kai Zhang (KAIR) |
 | EDSR | MIT | Sanghyun Son |
+| EDVR | Apache-2.0 | BasicSR Authors / OpenMMLab |
 | FSRCNNX | **GPL-3.0** (igv's trained weights) | igv, nessotrin, TianZerL |
 | HDRTVNet++ | MIT | Hoven Li |
 | FBCNN | Apache-2.0 | Jiaxi Jiang, Kai Zhang, Radu Timofte |
