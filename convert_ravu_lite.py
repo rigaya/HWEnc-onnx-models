@@ -5,6 +5,7 @@ Self-verifies: an independent numpy reference vs the exported ONNX.
 import argparse, sys, math, numpy as np, torch, torch.nn as nn
 import onnxruntime as ort
 from onnx_export_common import export_onnx
+from ravu_onnx_compat import rewrite_atan_file
 
 EPS = 1.192092896e-7
 
@@ -139,6 +140,8 @@ def convert(radius, upstream, output_dir):
                       input_names=['input'], output_names=['output'],
                       dynamic_axes={'input':{2:'h',3:'w'}, 'output':{2:'h2',3:'w2'}},
                       do_constant_folding=True)
+    replaced = rewrite_atan_file(onnx_path)
+    print(f"[r{radius}] CUDA互換化: Atanを{replaced}個置換")
     sess = ort.InferenceSession(onnx_path, providers=['CPUExecutionProvider'])
     o_out = sess.run(None, {'input': img[None,None]})[0][0,0]
     print(f"[r{radius}] ONNX-vs-numpyref max abs diff: {np.abs(o_out-ref).max():.2e}  -> {onnx_path}")

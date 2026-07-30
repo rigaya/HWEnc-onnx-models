@@ -16,6 +16,7 @@ plus constant/ramp sanity checks.
 import argparse, sys, math, numpy as np, torch, torch.nn as nn
 import onnxruntime as ort
 from onnx_export_common import export_onnx
+from ravu_onnx_compat import rewrite_atan_file
 
 EPS = 1.192092896e-7
 
@@ -212,6 +213,8 @@ def convert(radius, upstream, output_dir):
                       input_names=['input'], output_names=['output'],
                       dynamic_axes={'input':{2:'h',3:'w'}, 'output':{2:'h2',3:'w2'}},
                       do_constant_folding=True)
+    replaced = rewrite_atan_file(path)
+    print(f"[base r{radius}] CUDA互換化: Atanを{replaced}個置換")
     s = ort.InferenceSession(path, providers=['CPUExecutionProvider'])
     o = s.run(None, {'input': img[None,None]})[0][0,0]
     print(f"[base r{radius}] ONNX-vs-numpyref max diff: {np.abs(o-ref).max():.2e} | out {s.get_outputs()[0].shape} -> {path}")

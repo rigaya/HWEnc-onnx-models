@@ -16,6 +16,7 @@ Builds both PLAIN and ANTI-RINGING variants.
 import argparse, sys, math, numpy as np, torch, torch.nn as nn
 import onnxruntime as ort
 from onnx_export_common import export_onnx
+from ravu_onnx_compat import rewrite_atan_file
 
 EPS = 1.192092896e-7
 
@@ -265,6 +266,8 @@ def convert(radius, ratio, ar, upstream, output_dir):
                       input_names=['input'], output_names=['output'],
                       dynamic_axes={'input':{2:'h',3:'w'}, 'output':{2:'hk',3:'wk'}},
                       do_constant_folding=True)
+    replaced = rewrite_atan_file(path)
+    print(f"[zoom {tag}] CUDA互換化: Atanを{replaced}個置換")
     s = ort.InferenceSession(path, providers=['CPUExecutionProvider'])
     o = s.run(None, {'input': img[None,None]})[0][0,0]
     print(f"[zoom {tag}] ONNX-vs-numpyref max diff: {np.abs(o-ref).max():.2e} | out {s.get_outputs()[0].shape} -> {path}")
