@@ -15,6 +15,22 @@ warnings.filterwarnings("ignore")
 import torch, torch.nn as nn, torch.nn.functional as F
 from onnx_export_common import export_onnx
 
+# Real-CUGANは負のF.padをクロップとして使うが、DirectMLでは負のPadを
+# 正しく扱えない。負値だけのPadは同じ意味のスライスへ置き換え、ONNXへ
+# 移植可能なSliceとして出力する。正のPadや正負混在は従来処理へ渡す。
+_original_pad = F.pad
+
+def _pad_or_crop(input, pad, mode='constant', value=None):
+    if mode == 'constant' and any(amount < 0 for amount in pad) and all(amount <= 0 for amount in pad):
+        index = [slice(None)] * input.dim()
+        for i in range(len(pad) // 2):
+            begin, end = pad[2 * i], pad[2 * i + 1]
+            index[input.dim() - 1 - i] = slice(-begin or None, end or None)
+        return input[tuple(index)]
+    return _original_pad(input, pad, mode=mode, value=value)
+
+F.pad = _pad_or_crop
+
 # ONNX-traceable wrappers: tile_mode=0 path, fixed symmetric reflect pad
 # (caller feeds aligned dims), float 0..1 output.
 class Export2x(nn.Module):
