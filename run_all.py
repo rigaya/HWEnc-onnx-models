@@ -643,6 +643,8 @@ def generate_models_json(output: Path, dry_run: bool) -> None:
             entry["fp32"] = True
         if rel.parts[0] == "edvr":
             entry["frames"] = 5
+        if key.endswith("_ycbcr"):
+            entry["colorspace"] = "ycbcr"
         if rel.parts[0] == "hdrtvnetpp":
             entry["colorspace"] = "rgb"
             entry["colormatrix_out"] = "bt2020nc"
