@@ -1,11 +1,15 @@
 # HWEnc-onnx-models
 
-QSVEnc / NVEnc / VCEEnc の `--vpp-onnx` と `--vpp-rife-ov`、QSVEnc の
-`--vpp-stdeint` で使用する ONNX モデルのビルドツール群。
+QSVEnc / NVEnc / VCEEnc の `--vpp-onnx` と `--vpp-rife-ov` で使用する
+ONNXモデルのビルドツール群。QSVEncのONNXデインターレーサーは
+`--vpp-onnx-deint` と `onnx_deint_models.json`、NVEnc/VCEEncは現行の
+`--vpp-stdeint` と `stdeint_ov_models.json` を使用する。
 
 `--vpp-onnx` 向け28ファミリー・255モデル（FP32 243 + INT8 12）、RIFE 10モデル、
 ST-DeInt 2モデルを、1コマンドでダウンロード → 変換または展開 → INT8量子化 →
-マニフェスト生成まで実行する。
+マニフェスト生成まで実行する。デインターレース用マニフェストには通常
+`stdeint` と `stdeint_fast` を登録し、出力に `ddd/DDD.onnx` が既にある場合だけ
+`DDD` も登録する。DDDのダウンロード・生成は本リポジトリでは行わない。
 
 ## クイックスタート
 
@@ -77,14 +81,33 @@ output/
 ├── realcugan/
 ├── realesrgan/
 ├── rife/               # --vpp-rife-ov 用（models.jsonには未登録）
-├── stdeint/            # --vpp-stdeint 用（models.jsonには未登録）
+├── stdeint/            # ST-DeInt用（models.jsonには未登録）
+├── ddd/                # 任意配置の ddd/DDD.onnx
 ├── srmd/
 ├── waifu2x/
 ├── websr/
 ├── models.json              # --vpp-onnx 用モデルマニフェスト
 ├── rife_ov_models.json      # --vpp-rife-ov 用モデルマニフェスト
-└── stdeint_ov_models.json   # --vpp-stdeint 用モデルマニフェスト
+├── stdeint_ov_models.json   # NVEnc/VCEEnc --vpp-stdeint 用マニフェスト
+└── onnx_deint_models.json   # QSVEnc --vpp-onnx-deint 用マニフェスト
 ```
+
+`onnx_deint_models.json` の `architecture` は内部テンソル契約
+（`stdeint` または `ddd`）であり、公開CLIの切替スイッチではない。
+`model=` にはマニフェストの登録名を指定し、ONNXファイルの直接パスは受け付けない。
+DDD学習済みモデルは配布元とライセンスが未確定のため、`ddd/DDD.onnx` を自動取得せず、
+リリースアーカイブにも同梱しない。ST-DeIntもupstreamライセンスがUnknownのため、
+リリースアーカイブから除外する。
+
+### バックエンド別デインターレース用マニフェスト
+
+| バックエンド | オプション | マニフェスト | 登録名 |
+|-------------|-----------|--------------|--------|
+| QSVEnc | `--vpp-onnx-deint model=<name>` | `onnx_deint_models.json` | `stdeint`, `stdeint_fast`、配置時のみ `DDD` |
+| NVEnc / VCEEnc | `--vpp-stdeint model=<name>` | `stdeint_ov_models.json` | `stdeint`, `stdeint_fast` |
+
+2つのマニフェストはバックエンドごとに使用するレジストリが異なるため分離している。
+`run_all.py` は両方を生成するが、`architecture` メタデータを持つのはQSVEnc用だけである。
 
 ## モデル一覧
 
@@ -181,6 +204,7 @@ nncf (Neural Network Compression Framework) の Post-Training Quantization で F
 | `convert_edsr.py` | EDSR 変換スクリプト |
 | `convert_ravu_*.py` | RAVU 変換スクリプト (4本、export_ravu.py から呼出) |
 | `extract_anime4k_upscale_gan_glsl.py` | Anime4K GAN GLSL 解析ヘルパー |
+| `package_archives.py` | リリースアーカイブを作成（ST-DeInt、DDD、両デインターレース用マニフェストをmainから除外） |
 | `requirements.txt` | Python 依存パッケージ |
 
 ## ライセンス
@@ -207,6 +231,7 @@ nncf (Neural Network Compression Framework) の Post-Training Quantization で F
 | Real-ESRGAN | BSD-3-Clause | Xintao Wang |
 | RIFE v4.x | MIT | Megvii, hzwer |
 | ST-DeInt | **Unknown** | Yuqing Liuほか |
+| DDD | **Unknown / 未配布** | 学習済みモデルの配布元・ライセンス未確定 |
 | super-image (PAN, CARN, A2N, AWSRN, MSRN) | Apache-2.0 | Eugene Siow ほか |
 | waifu2x | MIT | nagadomi, nihui (ncnnトポロジー) |
 | websr | MIT | sb2702, bloc97 |
@@ -217,3 +242,11 @@ nncf (Neural Network Compression Framework) の Post-Training Quantization で F
 詳細は `licenses/fsrcnnx.txt` を参照。
 
 本リポジトリの変換スクリプト自体は MIT License。
+
+## 生成結果数
+
+デフォルトのパイプラインでは、汎用 `--vpp-onnx` モデル255個（FP32 243 + INT8 12）、
+RIFE 10個、ST-DeInt 2個と、汎用・RIFE・ST-DeInt用および
+`onnx_deint_models.json` の各マニフェストを生成する。QSVEnc用マニフェストの登録数は
+通常2件で、外部から `ddd/DDD.onnx` を配置した場合だけ `DDD` を加えた3件になる。
+DDDは生成物数・リリース同梱数に含めない。

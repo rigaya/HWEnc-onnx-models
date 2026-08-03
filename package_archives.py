@@ -4,10 +4,12 @@
 Includes only generated models / manifests / per-family LICENSE.txt.
 Excludes intermediate downloads (_work) and ST-DeInt (upstream license Unknown;
 kept out of release archives).
+DDD とデインターレース用マニフェストも、配布元・ライセンス未確定のため
+release archive から除外する。
 
 Archives:
     onnx_models_<version>_main.zip
-        All families except fbcnn/nafnet/stdeint.
+        fbcnn/nafnet/stdeint/ddd と両デインターレース用マニフェストを除く全ファミリー。
     onnx_models_<version>_fbcnn_nafnet.zip
         fbcnn + nafnet (split for the GitHub 2GB release asset limit).
 
@@ -30,6 +32,8 @@ MAIN_EXCLUDE = {
     "fbcnn",
     "nafnet",
     "stdeint",
+    "ddd",
+    "onnx_deint_models.json",
     "stdeint_ov_models.json",
 }
 
