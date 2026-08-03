@@ -616,8 +616,8 @@ def install_licenses(output: Path, dry_run: bool) -> None:
 # Phase 4: models.json
 # ---------------------------------------------------------------------------
 
-# RIFEとST-DeIntは専用フィルタ用なので、汎用models.jsonには登録しない。
-SCAN_EXCLUDE = {"_work", "rife", "stdeint"}
+# RIFE、ST-DeInt、DDDは専用フィルタ用なので、汎用models.jsonには登録しない。
+SCAN_EXCLUDE = {"_work", "rife", "stdeint", "ddd"}
 
 
 def generate_models_json(output: Path, dry_run: bool) -> None:
@@ -704,6 +704,39 @@ def generate_stdeint_ov_models_json(output: Path, dry_run: bool) -> None:
         print(f"  [FAIL] stdeint_ov_models.json: {err}")
 
 
+def generate_onnx_deint_models_json(output: Path, dry_run: bool) -> None:
+    """生成したデインターレース用ONNXモデルのマニフェストを出力する。"""
+    print("[PHASE 4] generate onnx_deint_models.json")
+    output_path = output / "onnx_deint_models.json"
+    if dry_run:
+        print(f"  [SCAN] {output}/stdeint/stdeint*.onnx + {output}/ddd/DDD.onnx -> {output_path}")
+        return
+
+    models: dict[str, dict[str, str]] = {}
+    for model_name in ("stdeint", "stdeint_fast"):
+        model_path = output / "stdeint" / f"{model_name}.onnx"
+        if model_path.is_file():
+            models[model_name] = {
+                "path": str(model_path.relative_to(output).as_posix()),
+                "architecture": "stdeint",
+            }
+
+    ddd_model_path = output / "ddd" / "DDD.onnx"
+    if ddd_model_path.is_file():
+        models["DDD"] = {
+            "path": str(ddd_model_path.relative_to(output).as_posix()),
+            "architecture": "ddd",
+        }
+
+    manifest = {"version": 1, "models": models}
+    try:
+        output_path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+        print(f"  [OK] {output_path}")
+        print(f"  models: {len(models)}")
+    except Exception as err:
+        print(f"  [FAIL] onnx_deint_models.json: {err}")
+
+
 # ---------------------------------------------------------------------------
 
 def main() -> int:
@@ -737,6 +770,7 @@ def main() -> int:
     generate_models_json(output, args.dry_run)
     generate_rife_ov_models_json(output, args.dry_run)
     generate_stdeint_ov_models_json(output, args.dry_run)
+    generate_onnx_deint_models_json(output, args.dry_run)
     print("[RUN_ALL] done")
     return 0
 
