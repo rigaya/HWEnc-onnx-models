@@ -2,16 +2,16 @@
 """Package converted ONNX models into release zip archives.
 
 Includes only generated models / manifests / per-family LICENSE.txt.
-Excludes intermediate downloads (_work) and ST-DeInt (upstream license Unknown;
-kept out of release archives).
-DDD とデインターレース用マニフェストも、配布元・ライセンス未確定のため
-release archive から除外する。
+中間ダウンロード（_work）とST-DeInt（upstreamライセンスUnknown）は除外する。
+DDDはMITライセンスとDDD専用デインターレース用マニフェストを別アーカイブに収録する。
 
 Archives:
     onnx_models_<version>_main.zip
         fbcnn/nafnet/stdeint/ddd と両デインターレース用マニフェストを除く全ファミリー。
     onnx_models_<version>_fbcnn_nafnet.zip
         fbcnn + nafnet (split for the GitHub 2GB release asset limit).
+    onnx_models_<version>_deint_ddd.zip
+        DDD.onnx、ddd/LICENSE.txt、DDDだけを登録したonnx_deint_models.json。
 
 Usage:
     python package_archives.py --input /path/to/output --dist /path/to/dist --version 20260718
@@ -21,7 +21,10 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import json
+import shutil
 import sys
+import tempfile
 import zipfile
 from pathlib import Path
 
@@ -90,6 +93,7 @@ def main() -> int:
     dist_dir.mkdir(parents=True, exist_ok=True)
     main_zip = dist_dir / f"onnx_models_{version}_main.zip"
     fbcnn_zip = dist_dir / f"onnx_models_{version}_fbcnn_nafnet.zip"
+    deint_ddd_zip = dist_dir / f"onnx_models_{version}_deint_ddd.zip"
 
     for old in dist_dir.glob("onnx_models_*"):
         if old.is_file():
@@ -113,6 +117,13 @@ def main() -> int:
         raise SystemExit("ERROR: no entries found for main archive")
     if not fbcnn_files:
         raise SystemExit("ERROR: no entries found for fbcnn/nafnet archive")
+    ddd_model = input_dir / "ddd" / "DDD.onnx"
+    ddd_license = input_dir / "ddd" / "LICENSE.txt"
+    if not ddd_model.is_file() or not ddd_license.is_file():
+        raise SystemExit(
+            "ERROR: DDD release inputs are required: "
+            f"{ddd_model} and {ddd_license}"
+        )
 
     print("=== Packaging main archive ===")
     print(f"  input: {input_dir}")
@@ -125,7 +136,25 @@ def main() -> int:
     print(f"  files: {len(fbcnn_files)}")
     write_zip(fbcnn_zip, input_dir, fbcnn_files)
 
-    archives = (main_zip, fbcnn_zip)
+    archives = [main_zip, fbcnn_zip]
+    # 入力ツリーに生成物を追加せず、一時 staging から専用 archive を作る。
+    with tempfile.TemporaryDirectory(prefix="ddd_archive_") as temp_dir:
+        staging = Path(temp_dir)
+        (staging / "ddd").mkdir(parents=True, exist_ok=True)
+        shutil.copy2(ddd_model, staging / "ddd" / "DDD.onnx")
+        shutil.copy2(ddd_license, staging / "ddd" / "LICENSE.txt")
+        manifest = {"version": 1, "models": {"DDD": {
+            "path": "ddd/DDD.onnx", "architecture": "ddd"
+        }}}
+        (staging / "onnx_deint_models.json").write_text(
+            json.dumps(manifest, indent=2) + "\n", encoding="utf-8"
+        )
+        deint_files = iter_files(staging)
+        print("=== Packaging DDD deinterlacer archive ===")
+        print(f"  zip:   {deint_ddd_zip}")
+        print(f"  files: {len(deint_files)}")
+        write_zip(deint_ddd_zip, staging, deint_files)
+    archives.append(deint_ddd_zip)
 
     print("=== Archive sizes ===")
     for path in archives:

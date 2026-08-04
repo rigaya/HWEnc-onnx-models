@@ -66,6 +66,8 @@ REPOS = [
     ("mpv-prescalers", "https://github.com/bjin/mpv-prescalers/archive/refs/heads/source.zip", "_work/repos/mpv-prescalers"),
     ("HDRTVNet-plus", "https://github.com/xiaom233/HDRTVNet-plus/archive/refs/heads/main.zip", "_work/repos/HDRTVNet-plus"),
     ("ST-DeInt", "https://github.com/yuqing-liu-dut/ST-DeInt/archive/refs/heads/main.zip", "_work/repos/ST-DeInt"),
+    # DDD は upstream の固定コミットから取得し、export_ddd.py で再現可能に変換する。
+    ("DDD", "https://github.com/vincentvdschaft/Disney-Deep-Deinterlacing/archive/ea3442a2a403b91f950a6f4688e872ed0fe60460.zip", "_work/repos/DDD"),
     ("BasicSR", "https://github.com/XPixelGroup/BasicSR/archive/refs/tags/v1.4.2.zip", "_work/repos/BasicSR"),
 ]
 
@@ -192,6 +194,8 @@ CONVERT_COMMANDS = [
     # --- デインターレース用の公式学習済み重み ---
     ("export_stdeint.py", ["--source-dir", "{repos}/ST-DeInt", "--output", "{out}/stdeint"]),
     ("export_stdeint.py", ["--source-dir", "{repos}/ST-DeInt", "--output", "{out}/stdeint", "--no-deform"]),
+    # Disney Deep Deinterlacing (MIT、固定コミットの checkpoint SHA-256 を検証)
+    ("export_ddd.py", ["--checkpoint", "{repos}/DDD/pretrained_checkpoint/model_state_dict.pt", "--output", "{out}/ddd"]),
     # RIFE is distributed as verified prebuilt ONNX files in the upstream archive.
     ("extract_rife.py", ["--archive", "{work}/rife_v8.7z", "--output", "{out}/rife"]),
 ]
@@ -567,6 +571,7 @@ LICENSE_MAP = {
     "bsrgan": "bsrgan.txt",
     "dncnn": "dncnn.txt",
     "dpsr": "dpsr.txt",
+    "ddd": "ddd.txt",
     "drunet": "drunet.txt",
     "edvr": "edvr.txt",
     "esrgan": "esrgan.txt",

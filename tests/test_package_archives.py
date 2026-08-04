@@ -7,6 +7,7 @@ import subprocess
 import sys
 import tempfile
 import zipfile
+import json
 from pathlib import Path
 import unittest
 
@@ -60,6 +61,7 @@ class PackageArchivesTest(unittest.TestCase):
             touch(output, relative_path)
         if include_ddd:
             touch(output, "ddd/DDD.onnx")
+            touch(output, "ddd/LICENSE.txt")
 
     def test_main_excludes_both_deint_families_and_manifests(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -73,6 +75,7 @@ class PackageArchivesTest(unittest.TestCase):
             self.assertEqual(result.returncode, 0, result.stderr)
             main = archive_entries(dist / "onnx_models_test_main.zip")
             split = archive_entries(dist / "onnx_models_test_fbcnn_nafnet.zip")
+            deint = archive_entries(dist / "onnx_models_test_deint_ddd.zip")
             self.assertIn("models.json", main)
             self.assertIn("rife_ov_models.json", main)
             self.assertIn("artcnn/example.onnx", main)
@@ -82,8 +85,17 @@ class PackageArchivesTest(unittest.TestCase):
             self.assertNotIn("stdeint_ov_models.json", main)
             self.assertNotIn("onnx_deint_models.json", main)
             self.assertEqual(split, {"fbcnn/example.onnx", "nafnet/example.onnx"})
+            self.assertEqual(deint, {"ddd/DDD.onnx", "ddd/LICENSE.txt", "onnx_deint_models.json"})
+            with zipfile.ZipFile(dist / "onnx_models_test_deint_ddd.zip") as archive:
+                manifest = json.loads(archive.read("onnx_deint_models.json"))
+            self.assertEqual(set(manifest["models"]), {"DDD"})
+            self.assertEqual(
+                manifest["models"]["DDD"],
+                {"path": "ddd/DDD.onnx", "architecture": "ddd"},
+            )
+            self.assertNotIn("stdeint", manifest["models"])
 
-    def test_missing_ddd_is_allowed(self) -> None:
+    def test_missing_ddd_fails_release_packaging(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
             root = Path(temp_dir)
             output = root / "output"
@@ -92,11 +104,8 @@ class PackageArchivesTest(unittest.TestCase):
 
             result = self.run_packager(output, dist)
 
-            self.assertEqual(result.returncode, 0, result.stderr)
-            main = archive_entries(dist / "onnx_models_test_main.zip")
-            self.assertIn("artcnn/example.onnx", main)
-            self.assertNotIn("onnx_deint_models.json", main)
-            self.assertNotIn("ddd/DDD.onnx", main)
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("DDD release inputs are required", result.stderr)
 
 
 if __name__ == "__main__":

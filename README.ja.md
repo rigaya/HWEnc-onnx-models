@@ -6,10 +6,9 @@ ONNXモデルのビルドツール群。QSVEncのONNXデインターレーサー
 `--vpp-stdeint` と `stdeint_ov_models.json` を使用する。
 
 `--vpp-onnx` 向け28ファミリー・255モデル（FP32 243 + INT8 12）、RIFE 10モデル、
-ST-DeInt 2モデルを、1コマンドでダウンロード → 変換または展開 → INT8量子化 →
-マニフェスト生成まで実行する。デインターレース用マニフェストには通常
-`stdeint` と `stdeint_fast` を登録し、出力に `ddd/DDD.onnx` が既にある場合だけ
-`DDD` も登録する。DDDのダウンロード・生成は本リポジトリでは行わない。
+ST-DeInt 2モデルとMITライセンスのDDDを、1コマンドでダウンロード → 変換または展開 →
+INT8量子化 → マニフェスト生成まで実行する。DDDは固定upstreamコミットとcheckpointから
+`export_ddd.py`で再現可能に変換する。
 
 ## クイックスタート
 
@@ -82,7 +81,7 @@ output/
 ├── realesrgan/
 ├── rife/               # --vpp-rife-ov 用（models.jsonには未登録）
 ├── stdeint/            # ST-DeInt用（models.jsonには未登録）
-├── ddd/                # 任意配置の ddd/DDD.onnx
+├── ddd/                # 生成された DDD.onnx と LICENSE.txt
 ├── srmd/
 ├── waifu2x/
 ├── websr/
@@ -95,15 +94,15 @@ output/
 `onnx_deint_models.json` の `architecture` は内部テンソル契約
 （`stdeint` または `ddd`）であり、公開CLIの切替スイッチではない。
 `model=` にはマニフェストの登録名を指定し、ONNXファイルの直接パスは受け付けない。
-DDD学習済みモデルは配布元とライセンスが未確定のため、`ddd/DDD.onnx` を自動取得せず、
-リリースアーカイブにも同梱しない。ST-DeIntもupstreamライセンスがUnknownのため、
+DDDは`onnx_models_<version>_deint_ddd.zip`専用アーカイブ（DDD、LICENSE、DDD専用マニフェスト）
+として配布する。ST-DeIntはupstreamライセンスがUnknownのため、
 リリースアーカイブから除外する。
 
 ### バックエンド別デインターレース用マニフェスト
 
 | バックエンド | オプション | マニフェスト | 登録名 |
 |-------------|-----------|--------------|--------|
-| QSVEnc | `--vpp-onnx-deint model=<name>` | `onnx_deint_models.json` | `stdeint`, `stdeint_fast`、配置時のみ `DDD` |
+| QSVEnc | `--vpp-onnx-deint model=<name>` | `onnx_deint_models.json` | `stdeint`, `stdeint_fast`, `DDD` |
 | NVEnc / VCEEnc | `--vpp-stdeint model=<name>` | `stdeint_ov_models.json` | `stdeint`, `stdeint_fast` |
 
 2つのマニフェストはバックエンドごとに使用するレジストリが異なるため分離している。
@@ -123,6 +122,7 @@ DDD学習済みモデルは配布元とライセンスが未確定のため、`d
 | bsrgan | PyTorch .pth | 3 | - | 3 |
 | dncnn | PyTorch .pth | 6 | - | 6 |
 | dpsr | PyTorch .pth | 4 | 1 | 5 |
+| ddd | PyTorch .pt | 1 | - | 1 |
 | drunet | PyTorch .pth | 4 | 1 | 5 |
 | edvr | PyTorch .pth | 2 | - | 2 |
 | edsr | PyTorch .pth | 3 | - | 3 |
@@ -145,6 +145,10 @@ DDD学習済みモデルは配布元とライセンスが未確定のため、`d
 | websr | JSON weights | 9 | - | 9 |
 | **--vpp-onnx 合計** | | **243** | **12** | **255** |
 
+DDDは専用デインターレースモデルのため、上記の汎用`--vpp-onnx`合計255には含めない。
+動的H/WのONNX契約は`(1,9,H,W) -> (1,3,H,W)`で、欠落フィールドを出力し、推論後の
+フィールドweaveはQSVEnc側で行う。
+
 ## 変換ソース種別
 
 ### GLSL シェーダ解析
@@ -159,6 +163,9 @@ HDRTVNet++ の SDR→HDR モデルは公式の学習済み重みから変換。
 ST-DeInt は公式の学習済み重みから、GridSampleによる等価な動的H/W・半高6ch復元出力モデルへ変換。
 weaveは推論後にQSVEnc側で行う。
 `stdeint_fast.onnx` は `--no-deform` でdeform alignmentとGridSampleを除去し、わずかな画質差と引き換えにfp16推論を高速化する。
+
+DDDは固定MIT upstream checkpointから動的H/Wの`(1,9,H,W) -> (1,3,H,W)`欠落フィールド
+モデルへ変換する。推論後のフィールドweaveはQSVEnc側で行い、DDD専用アーカイブとして配布する。
 
 EDVR-MはMMagicのREDS学習済み重みをBasicSRの同一構造へ変換し、5フレームを
 チャンネル方向へ並べた15ch入力の固定解像度ONNXとして出力する。QSVEnc/NVEncでは
@@ -199,12 +206,13 @@ nncf (Neural Network Compression Framework) の Post-Training Quantization で F
 | `quantize_int8.py` | nncf による INT8 量子化 |
 | `export_*.py` | 各ファミリーの FP32 ONNX 変換スクリプト |
 | `export_stdeint.py` | ST-DeInt公式重みを通常版と `--no-deform` 高速版の半高6ch復元出力ONNXへ変換 |
+| `export_ddd.py` | 固定MIT DDD checkpointを動的H/Wの`(1,9,H,W) -> (1,3,H,W)`欠落フィールドONNXへ変換 |
 | `export_edvr.py` | EDVR-M REDS x4を5フレーム・15ch入力の固定解像度ONNXへ変換 |
 | `extract_rife.py` | 公式アーカイブからRIFE ONNXを展開し、SHA-256と入出力形状を検証 |
 | `convert_edsr.py` | EDSR 変換スクリプト |
 | `convert_ravu_*.py` | RAVU 変換スクリプト (4本、export_ravu.py から呼出) |
 | `extract_anime4k_upscale_gan_glsl.py` | Anime4K GAN GLSL 解析ヘルパー |
-| `package_archives.py` | リリースアーカイブを作成（ST-DeInt、DDD、両デインターレース用マニフェストをmainから除外） |
+| `package_archives.py` | main、fbcnn/nafnet、DDD専用デインターレースアーカイブを作成（ST-DeIntは分離） |
 | `requirements.txt` | Python 依存パッケージ |
 
 ## ライセンス
@@ -231,7 +239,7 @@ nncf (Neural Network Compression Framework) の Post-Training Quantization で F
 | Real-ESRGAN | BSD-3-Clause | Xintao Wang |
 | RIFE v4.x | MIT | Megvii, hzwer |
 | ST-DeInt | **Unknown** | Yuqing Liuほか |
-| DDD | **Unknown / 未配布** | 学習済みモデルの配布元・ライセンス未確定 |
+| DDD | MIT | Vincent van de Schaft（固定upstreamコミット） |
 | super-image (PAN, CARN, A2N, AWSRN, MSRN) | Apache-2.0 | Eugene Siow ほか |
 | waifu2x | MIT | nagadomi, nihui (ncnnトポロジー) |
 | websr | MIT | sb2702, bloc97 |
@@ -246,7 +254,5 @@ nncf (Neural Network Compression Framework) の Post-Training Quantization で F
 ## 生成結果数
 
 デフォルトのパイプラインでは、汎用 `--vpp-onnx` モデル255個（FP32 243 + INT8 12）、
-RIFE 10個、ST-DeInt 2個と、汎用・RIFE・ST-DeInt用および
-`onnx_deint_models.json` の各マニフェストを生成する。QSVEnc用マニフェストの登録数は
-通常2件で、外部から `ddd/DDD.onnx` を配置した場合だけ `DDD` を加えた3件になる。
-DDDは生成物数・リリース同梱数に含めない。
+RIFE 10個、ST-DeInt 2個、DDDと各マニフェストを生成する。リリース時はDDD専用
+アーカイブを追加し、ST-DeIntは配布アーカイブから除外する。
