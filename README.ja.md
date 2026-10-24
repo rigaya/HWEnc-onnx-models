@@ -1,11 +1,12 @@
 # HWEnc-onnx-models
 
 QSVEnc / NVEnc / VCEEnc の `--vpp-onnx` と `--vpp-rife-ov` で使用する
-ONNXモデルのビルドツール群。QSVEncのONNXデインターレーサーは
-`--vpp-onnx-deint` と `onnx_deint_models.json` を使用する。
+ONNXモデルのビルドツール群。NVEnc/QSVEncのONNXデインターレーサーは
+`--vpp-onnx-deint`、VHSフィールド修復は`--vpp-vhs-restore`を使用する。
+モデルの内部台帳は`onnx_deint_models.json`を共有する。
 
-`--vpp-onnx` 向け30ファミリー・257モデル（FP32 245 + INT8 12）、RIFE 10モデルと
-MITライセンスのDDDを、1コマンドでダウンロード → 変換または展開 →
+`--vpp-onnx`向け30ファミリー・257モデル（FP32 245 + INT8 12）、RIFE 10モデルと
+DDD（MIT）・vhs-restore PAL/SECAM（GPL-3.0）を、1コマンドでダウンロード → 変換または展開 →
 INT8量子化 → マニフェスト生成まで実行する。DDDは固定upstreamコミットとcheckpointから
 `export_ddd.py`で再現可能に変換する。
 
@@ -74,6 +75,7 @@ output/
 ├── ffdnet/
 ├── fsrcnnx/
 ├── hdrtvnetpp/
+├── liveaction/         # 実写修復・2倍拡大モデル（作者のONNXをそのまま配置）
 ├── nnedi3/
 ├── ravu/
 ├── realcugan/
@@ -81,24 +83,28 @@ output/
 ├── rife/               # --vpp-rife-ov 用（models.jsonには未登録）
 ├── ddd/                # 生成された DDD.onnx と LICENSE.txt
 ├── srmd/
+├── vhs2hd/             # VHS修復・2倍拡大モデル（作者のONNXをそのまま配置）
+├── vhs_restore/        # PAL/SECAMの等倍修復ONNXと再現用source/
 ├── waifu2x/
 ├── websr/
 ├── models.json              # --vpp-onnx 用モデルマニフェスト
 ├── rife_ov_models.json      # --vpp-rife-ov 用モデルマニフェスト
-└── onnx_deint_models.json   # QSVEnc --vpp-onnx-deint 用マニフェスト
+└── onnx_deint_models.json   # NVEnc/QSVEncのインタレ解除・VHS修復共通マニフェスト
 ```
 
 `onnx_deint_models.json` の `architecture` は内部テンソル契約
-（現在は`ddd`のみ）であり、公開CLIの切替スイッチではない。
+（`ddd`と`vhs_restore`）であり、公開CLIの切替スイッチではない。
 `model=` にはマニフェストの登録名を指定し、ONNXファイルの直接パスは受け付けない。
-DDDは`onnx_models_<version>_deint_ddd.zip`専用アーカイブ（DDD、LICENSE、DDD専用マニフェスト）
-として配布する。ST-DeIntはダウンロード・変換・マニフェスト生成をすべてスキップする。
+DDDとvhs-restoreは`onnx_models_<version>_deint.zip`に各LICENSEと共通マニフェストを収録する。
+vhs-restoreは元のPTH重みと変換器を`vhs_restore/source/`にも収録する。
+旧`_deint_ddd.zip`のマニフェストではvhs-restoreを選択できないため、新しいアーカイブを展開する。ST-DeIntはダウンロード・変換・マニフェスト生成をすべてスキップする。
 
-### バックエンド別デインターレース用マニフェスト
+### バックエンド別フィールド処理用マニフェスト
 
 | バックエンド | オプション | マニフェスト | 登録名 |
 |-------------|-----------|--------------|--------|
-| QSVEnc | `--vpp-onnx-deint model=<name>` | `onnx_deint_models.json` | `DDD` |
+| NVEnc/QSVEnc | `--vpp-onnx-deint model=<name>` | `onnx_deint_models.json` | `DDD` |
+| NVEnc/QSVEnc | `--vpp-vhs-restore model=<name>` | `onnx_deint_models.json` | `vhs_restore_pal`、`vhs_restore_secam` |
 
 ## モデル一覧
 
@@ -126,6 +132,7 @@ DDDは`onnx_models_<version>_deint_ddd.zip`専用アーカイブ（DDD、LICENSE
 | hdrtvnetpp | PyTorch .pth | 2 | - | 2 |
 | liveaction | ONNX（作者配布） | 1 | - | 1 |
 | vhs2hd | ONNX（作者配布） | 1 | - | 1 |
+| vhs_restore | PyTorch .pth | 2 | - | 2 |
 | nnedi3 | Python weights | 10 | - | 10 |
 | nafnet | PyTorch .pth | 4 | - | 4 |
 | ravu | Python weights | 21 | - | 21 |
@@ -136,11 +143,11 @@ DDDは`onnx_models_<version>_deint_ddd.zip`専用アーカイブ（DDD、LICENSE
 | superimage | PyTorch .pth | 24 | - | 24 |
 | waifu2x | JSON weights | 34 | - | 34 |
 | websr | JSON weights | 9 | - | 9 |
-| **--vpp-onnx 合計** | | **245** | **12** | **257** |
+| **--vpp-onnx合計** | | **245** | **12** | **257** |
 
-DDDは専用デインターレースモデルのため、上記の汎用`--vpp-onnx`合計257には含めない。
-動的H/WのONNX契約は`(1,9,H,W) -> (1,3,H,W)`で、欠落フィールドを出力し、推論後の
-フィールドweaveはQSVEnc側で行う。
+DDDとvhs-restoreは専用のフィールド処理で使用するため、上記の汎用`--vpp-onnx`合計257には含めない。
+DDDの動的H/WのONNX契約は`(1,9,H,W) -> (1,3,H,W)`で、欠落フィールドを出力し、推論後の
+フィールドweaveはエンコーダー側で行う。
 
 ## 変換ソース種別
 
@@ -155,7 +162,7 @@ KAIR, EDSR, Real-ESRGAN, Real-CUGAN, BSRGAN 等の学習済みモデルを `torc
 HDRTVNet++ の SDR→HDR モデルは公式の学習済み重みから変換。
 
 DDDは固定MIT upstream checkpointから動的H/Wの`(1,9,H,W) -> (1,3,H,W)`欠落フィールド
-モデルへ変換する。推論後のフィールドweaveはQSVEnc側で行い、DDD専用アーカイブとして配布する。
+モデルへ変換する。推論後のフィールドweaveはエンコーダー側で行い、vhs-restoreと同じデインターレース用アーカイブに収録する。
 
 EDVR-MはMMagicのREDS学習済み重みをBasicSRの同一構造へ変換し、5フレームを
 チャンネル方向へ並べた15ch入力の固定解像度ONNXとして出力する。QSVEnc/NVEncでは
@@ -195,13 +202,15 @@ nncf (Neural Network Compression Framework) の Post-Training Quantization で F
 | `setup_env.bat` | Python venv セットアップ (Windows) |
 | `quantize_int8.py` | nncf による INT8 量子化 |
 | `export_*.py` | 各ファミリーの FP32 ONNX 変換スクリプト |
+| `import_restoration_models.py` | 作者配布のLiveAction/VHS2HDをSHA-256・ONNX検証後に配置 |
+| `export_vhs_restore.py` | PAL/SECAMのCompact重みを動的H/WのRGB等倍修復ONNXに変換 |
 | `export_ddd.py` | 固定MIT DDD checkpointを動的H/Wの`(1,9,H,W) -> (1,3,H,W)`欠落フィールドONNXへ変換 |
 | `export_edvr.py` | EDVR-M REDS x4を5フレーム・15ch入力の固定解像度ONNXへ変換 |
 | `extract_rife.py` | 公式アーカイブからRIFE ONNXを展開し、SHA-256と入出力形状を検証 |
 | `convert_edsr.py` | EDSR 変換スクリプト |
 | `convert_ravu_*.py` | RAVU 変換スクリプト (4本、export_ravu.py から呼出) |
 | `extract_anime4k_upscale_gan_glsl.py` | Anime4K GAN GLSL 解析ヘルパー |
-| `package_archives.py` | main、fbcnn/nafnet、DDD専用デインターレースアーカイブを作成 |
+| `package_archives.py` | main、fbcnn/nafnet、DDD・vhs-restoreのデインターレースアーカイブを作成 |
 | `requirements.txt` | Python 依存パッケージ |
 
 ## ライセンス
@@ -220,8 +229,6 @@ nncf (Neural Network Compression Framework) の Post-Training Quantization で F
 | EDVR | Apache-2.0 | BasicSR Authors / OpenMMLab |
 | FSRCNNX | **GPL-3.0** (igvの学習済み重み) | igv, nessotrin, TianZerL |
 | HDRTVNet++ | MIT | Hoven Li |
-| LiveActionV1 SPAN | Apache-2.0（NOTICE同梱） | jcj83429 |
-| VHS2HD RealPLKSR | CC-BY-SA-4.0 | starinspace |
 | FBCNN | Apache-2.0 | Jiaxi Jiang, Kai Zhang, Radu Timofte |
 | NAFNet | MIT | megvii-model |
 | NNEDI3 | **LGPL-3.0** (学習済み重み) | bjin |
@@ -229,6 +236,9 @@ nncf (Neural Network Compression Framework) の Post-Training Quantization で F
 | Real-CUGAN | MIT | bilibili |
 | Real-ESRGAN | BSD-3-Clause | Xintao Wang |
 | RIFE v4.x | MIT | Megvii, hzwer |
+| LiveActionV1 SPAN | Apache-2.0（NOTICE同梱） | jcj83429 |
+| VHS2HD RealPLKSR | CC-BY-SA-4.0 | starinspace |
+| vhs-restore PAL/SECAM | GPL-3.0 | itewreed |
 | DDD | MIT | Vincent van de Schaft（固定upstreamコミット） |
 | super-image (PAN, CARN, A2N, AWSRN, MSRN) | Apache-2.0 | Eugene Siow ほか |
 | waifu2x | MIT | nagadomi, nihui (ncnnトポロジー) |
@@ -243,15 +253,22 @@ nncf (Neural Network Compression Framework) の Post-Training Quantization で F
 
 ## 生成結果数
 
-デフォルトのパイプラインでは、汎用 `--vpp-onnx` モデル257個（FP32 245 + INT8 12）、
-RIFE 10個、DDDと各マニフェストを生成する。ST-DeIntは取得も生成もしない。
+デフォルトのパイプラインでは、汎用`--vpp-onnx`モデル257個（FP32 245 + INT8 12）、
+RIFE 10個、DDD、vhs-restore 2個と各マニフェストを生成する。ST-DeIntは取得も生成もしない。
 
-## 実写修復モデル
+## 実写・VHS修復モデル
 
-LiveActionV1 SPANは作者配布のONNXをSHA-256とonnx.checkerで検証し、改変せずに収録する。
-`--vpp-onnx model=2xliveactionv1_span_490000`で選択できるRGB入力の2倍拡大モデル。
-Apache-2.0のライセンス本文とNOTICEをliveaction/LICENSE.txtに同梱する。
+`2xliveactionv1_span_490000`と`2xvhs2hd-realplksr`は`--vpp-onnx`で選択するRGBの2倍拡大モデル。
+配布済みONNXを改変せず、固定SHA-256を検証して収録する。`out_res`で最終解像度を指定できる。
 
-VHS2HD RealPLKSRも作者配布のONNXを同様に検証し、改変せずに収録する。
-`--vpp-onnx model=2xvhs2hd-realplksr`で選択できるRGB入力の2倍拡大モデル。
-CC-BY-SA-4.0の由来と条件はvhs2hd/LICENSE.txtに同梱する。
+`vhs_restore_pal`と`vhs_restore_secam`は`--vpp-vhs-restore`で選択する。
+入力フィールドを上下に並べて等倍修復し、元の走査線配置へ戻した後でデインターレースする。
+ONNXはフィールド修復を担当し、インタレ解除は既存のGPU版Bwdifが行う。
+作者の手順のうち事前のノイズ除去は行わない。`mode=bob`は倍fps、`mode=normal`は元のfps。
+色行列・レンジは入力映像に合わせて指定する。入力は8bitのYUV420、高さは4の倍数とする。
+NVEncは共有CUDA、QSVEncは共有OpenCLを必須とし、GPUからCPUへ画像を転送する経路には切り替えない。
+
+対象モデルだけを生成する場合は、`run_all.py`のURLから対応する重み・ONNXを取得し、
+`import_restoration_models.py --models-dir <配布済みONNXのディレクトリ> --output <出力ルート>`と
+`export_vhs_restore.py --models-dir <PAL/SECAM重みのディレクトリ> --output <出力ルート>/vhs_restore`を実行する。
+後者は小さな2解像度でPyTorchとONNX Runtimeの数値一致を検証する。

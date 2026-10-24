@@ -3,15 +3,15 @@
 
 Includes only generated models / manifests / per-family LICENSE.txt.
 中間ダウンロード（_work）と、旧出力に残る可能性があるST-DeIntは除外する。
-DDDはMITライセンスとDDD専用デインターレース用マニフェストを別アーカイブに収録する。
+DDDとvhs-restoreはそれぞれのライセンスと共通マニフェストをデインターレース用アーカイブに収録する。
 
 Archives:
     onnx_models_<version>_main.zip
-        fbcnn/nafnet/stdeint/ddd とデインターレース用マニフェストを除く全ファミリー。
+        fbcnn/nafnet/stdeint/ddd/vhs_restoreとデインターレース用マニフェストを除く全ファミリー。
     onnx_models_<version>_fbcnn_nafnet.zip
         fbcnn + nafnet (split for the GitHub 2GB release asset limit).
-    onnx_models_<version>_deint_ddd.zip
-        DDD.onnx、ddd/LICENSE.txt、DDDだけを登録したonnx_deint_models.json。
+    onnx_models_<version>_deint.zip
+        DDD、vhs-restore、各LICENSE、GPLモデルの元の重み・変換器、共通マニフェスト。
 
 Usage:
     python package_archives.py --input /path/to/output --dist /path/to/dist --version 20260718
@@ -36,6 +36,7 @@ MAIN_EXCLUDE = {
     "nafnet",
     "stdeint",
     "ddd",
+    "vhs_restore",
     "onnx_deint_models.json",
     "stdeint_ov_models.json",
 }
@@ -93,7 +94,7 @@ def main() -> int:
     dist_dir.mkdir(parents=True, exist_ok=True)
     main_zip = dist_dir / f"onnx_models_{version}_main.zip"
     fbcnn_zip = dist_dir / f"onnx_models_{version}_fbcnn_nafnet.zip"
-    deint_ddd_zip = dist_dir / f"onnx_models_{version}_deint_ddd.zip"
+    deint_zip = dist_dir / f"onnx_models_{version}_deint.zip"
 
     for old in dist_dir.glob("onnx_models_*"):
         if old.is_file():
@@ -125,6 +126,18 @@ def main() -> int:
             f"{ddd_model} and {ddd_license}"
         )
 
+    vhs_dir = input_dir / "vhs_restore"
+    required_vhs = [vhs_dir / "LICENSE.txt"]
+    for system in ("pal", "secam"):
+        required_vhs.extend((vhs_dir / f"vhs_restore_{system}.onnx",
+                             vhs_dir / "source" / f"1x_vhs-restore_{system}_compact_80k.pth"))
+    required_vhs.extend(vhs_dir / "source" / filename for filename in (
+        "export_vhs_restore.py", "export_realesrgan.py", "onnx_export_common.py",
+        "LICENSE", "licenses/realesrgan.txt", "requirements.txt", "README.txt"))
+    for path in required_vhs:
+        if not path.is_file():
+            raise SystemExit(f"ERROR: vhs-restore配布に必要なファイルがありません: {path}")
+
     print("=== Packaging main archive ===")
     print(f"  input: {input_dir}")
     print(f"  zip:   {main_zip}")
@@ -137,24 +150,28 @@ def main() -> int:
     write_zip(fbcnn_zip, input_dir, fbcnn_files)
 
     archives = [main_zip, fbcnn_zip]
-    # 入力ツリーに生成物を追加せず、一時 staging から専用 archive を作る。
-    with tempfile.TemporaryDirectory(prefix="ddd_archive_") as temp_dir:
+    # 入力ツリーを変更せず、登録可能なモデルと再現用ソースを同じアーカイブに収録する。
+    with tempfile.TemporaryDirectory(prefix="deint_archive_") as temp_dir:
         staging = Path(temp_dir)
         (staging / "ddd").mkdir(parents=True, exist_ok=True)
         shutil.copy2(ddd_model, staging / "ddd" / "DDD.onnx")
         shutil.copy2(ddd_license, staging / "ddd" / "LICENSE.txt")
-        manifest = {"version": 1, "models": {"DDD": {
-            "path": "ddd/DDD.onnx", "architecture": "ddd"
-        }}}
+        shutil.copytree(vhs_dir, staging / "vhs_restore")
+        models = {"DDD": {"path": "ddd/DDD.onnx", "architecture": "ddd"}}
+        for system in ("pal", "secam"):
+            models[f"vhs_restore_{system}"] = {
+                "path": f"vhs_restore/vhs_restore_{system}.onnx", "architecture": "vhs_restore",
+            }
+        manifest = {"version": 1, "models": models}
         (staging / "onnx_deint_models.json").write_text(
             json.dumps(manifest, indent=2) + "\n", encoding="utf-8"
         )
         deint_files = iter_files(staging)
-        print("=== Packaging DDD deinterlacer archive ===")
-        print(f"  zip:   {deint_ddd_zip}")
+        print("=== デインターレースモデルをパッケージ化 ===")
+        print(f"  zip:   {deint_zip}")
         print(f"  files: {len(deint_files)}")
-        write_zip(deint_ddd_zip, staging, deint_files)
-    archives.append(deint_ddd_zip)
+        write_zip(deint_zip, staging, deint_files)
+    archives.append(deint_zip)
 
     print("=== Archive sizes ===")
     for path in archives:

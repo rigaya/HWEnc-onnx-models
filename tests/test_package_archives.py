@@ -63,6 +63,16 @@ class PackageArchivesTest(unittest.TestCase):
             touch(output, "ddd/DDD.onnx")
             touch(output, "ddd/LICENSE.txt")
 
+        for relative_path in (
+            "vhs_restore/vhs_restore_pal.onnx", "vhs_restore/vhs_restore_secam.onnx", "vhs_restore/LICENSE.txt",
+            "vhs_restore/source/1x_vhs-restore_pal_compact_80k.pth",
+            "vhs_restore/source/1x_vhs-restore_secam_compact_80k.pth",
+            "vhs_restore/source/export_vhs_restore.py", "vhs_restore/source/export_realesrgan.py",
+            "vhs_restore/source/onnx_export_common.py", "vhs_restore/source/LICENSE",
+            "vhs_restore/source/licenses/realesrgan.txt", "vhs_restore/source/requirements.txt", "vhs_restore/source/README.txt",
+        ):
+            touch(output, relative_path)
+
     def test_main_excludes_both_deint_families_and_manifests(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
             root = Path(temp_dir)
@@ -75,7 +85,7 @@ class PackageArchivesTest(unittest.TestCase):
             self.assertEqual(result.returncode, 0, result.stderr)
             main = archive_entries(dist / "onnx_models_test_main.zip")
             split = archive_entries(dist / "onnx_models_test_fbcnn_nafnet.zip")
-            deint = archive_entries(dist / "onnx_models_test_deint_ddd.zip")
+            deint = archive_entries(dist / "onnx_models_test_deint.zip")
             self.assertIn("models.json", main)
             self.assertIn("rife_ov_models.json", main)
             self.assertIn("artcnn/example.onnx", main)
@@ -85,15 +95,32 @@ class PackageArchivesTest(unittest.TestCase):
             self.assertNotIn("stdeint_ov_models.json", main)
             self.assertNotIn("onnx_deint_models.json", main)
             self.assertEqual(split, {"fbcnn/example.onnx", "nafnet/example.onnx"})
-            self.assertEqual(deint, {"ddd/DDD.onnx", "ddd/LICENSE.txt", "onnx_deint_models.json"})
-            with zipfile.ZipFile(dist / "onnx_models_test_deint_ddd.zip") as archive:
+            self.assertIn("ddd/DDD.onnx", deint)
+            self.assertIn("ddd/LICENSE.txt", deint)
+            self.assertIn("onnx_deint_models.json", deint)
+            self.assertIn("vhs_restore/vhs_restore_pal.onnx", deint)
+            self.assertIn("vhs_restore/vhs_restore_secam.onnx", deint)
+            self.assertIn("vhs_restore/source/1x_vhs-restore_pal_compact_80k.pth", deint)
+            self.assertIn("vhs_restore/source/export_vhs_restore.py", deint)
+            self.assertFalse(any(name.startswith("vhs_restore/") for name in main))
+            with zipfile.ZipFile(dist / "onnx_models_test_deint.zip") as archive:
                 manifest = json.loads(archive.read("onnx_deint_models.json"))
-            self.assertEqual(set(manifest["models"]), {"DDD"})
+            self.assertEqual(set(manifest["models"]), {"DDD", "vhs_restore_pal", "vhs_restore_secam"})
             self.assertEqual(
                 manifest["models"]["DDD"],
                 {"path": "ddd/DDD.onnx", "architecture": "ddd"},
             )
             self.assertNotIn("stdeint", manifest["models"])
+
+    def test_missing_vhs_source_fails_packaging(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            output = root / "output"
+            self.create_common_fixture(output, include_ddd=True)
+            (output / "vhs_restore/source/1x_vhs-restore_pal_compact_80k.pth").unlink()
+            result = self.run_packager(output, root / "dist")
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("1x_vhs-restore_pal_compact_80k.pth", result.stderr)
 
     def test_missing_ddd_fails_release_packaging(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:

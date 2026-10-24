@@ -75,6 +75,10 @@ RESTORATION_ONNX = [
     ("https://raw.githubusercontent.com/jcj83429/upscaling/5d8cdd2e17750b64be39ccab3a8763d91128fe15/2xLiveActionV1_SPAN/2xLiveActionV1_SPAN_490000.onnx", "_work/restoration/2xLiveActionV1_SPAN_490000.onnx"),
     ("https://github.com/starinspace/StarinspaceUpscale/releases/download/Models/2xVHS2HD-RealPLKSR.onnx", "_work/restoration/2xVHS2HD-RealPLKSR.onnx"),
 ]
+VHS_RESTORE_WEIGHTS = [
+    (f"https://raw.githubusercontent.com/itewreed/vhs-decode-tools/a8ed1a7fc0070d671b3ff2204e655a8c36c8e3fd/1x_vhs-restore_{system}_compact_80k.pth", f"_work/vhs_restore/1x_vhs-restore_{system}_compact_80k.pth")
+    for system in ("pal", "secam")
+]
 
 REALCUGAN_WEIGHTS_URL = "https://github.com/bilibili/ailab/releases/download/Real-CUGAN/updated_weights.zip"
 ANIME4K_RELEASE_URL = "https://github.com/bloc97/Anime4K/releases/download/v4.0.1/Anime4K_v4.0.zip"
@@ -159,6 +163,7 @@ KAIR_MODELS = [
 
 CONVERT_COMMANDS = [
     ("import_restoration_models.py", ["--models-dir", "{work}/restoration", "--output", "{out}"]),
+    ("export_vhs_restore.py", ["--models-dir", "{work}/vhs_restore", "--output", "{out}/vhs_restore"]),
     # --- GLSL based (self-contained, read shaders straight from the repos) ---
     ("export_acnet.py", ["--glsl-dir", "{repos}/ACNetGLSL/glsl/acnet", "--output", "{out}/acnet"]),
     ("export_arnet.py", ["--glsl-dir", "{repos}/ACNetGLSL/glsl/arnet", "--output", "{out}/arnet"]),
@@ -336,7 +341,7 @@ def download_phase(output: Path, dry_run: bool) -> None:
         download_file(url, output / rel_dest, dry_run)
 
     print("  実写・VHS修復モデルをダウンロード...")
-    for url, rel_dest in RESTORATION_ONNX:
+    for url, rel_dest in RESTORATION_ONNX + VHS_RESTORE_WEIGHTS:
         download_file(url, output / rel_dest, dry_run)
 
     print("  Downloading EDSR baseline weights...")
@@ -590,6 +595,7 @@ LICENSE_MAP = {
     "hdrtvnetpp": "hdrtvnetpp.txt",
     "liveaction": "liveaction.txt",
     "vhs2hd": "vhs2hd.txt",
+    "vhs_restore": "vhs_restore.txt",
     "nnedi3": "nnedi3.txt",
     "nafnet": "nafnet.txt",
     "ravu": "ravu.txt",
@@ -629,9 +635,9 @@ def install_licenses(output: Path, dry_run: bool) -> None:
 # Phase 4: models.json
 # ---------------------------------------------------------------------------
 
-# RIFE、DDDは専用フィルタ用なので、汎用models.jsonには登録しない。
+# RIFE、DDD、vhs-restoreは専用フィルター用なので、汎用models.jsonには登録しない。
 # stdeintは現在生成しないが、再利用した出力に残る旧生成物の混入も防止する。
-SCAN_EXCLUDE = {"_work", "rife", "stdeint", "ddd"}
+SCAN_EXCLUDE = {"_work", "rife", "stdeint", "ddd", "vhs_restore"}
 
 
 def generate_models_json(output: Path, dry_run: bool) -> None:
@@ -701,7 +707,7 @@ def generate_onnx_deint_models_json(output: Path, dry_run: bool) -> None:
     print("[PHASE 4] generate onnx_deint_models.json")
     output_path = output / "onnx_deint_models.json"
     if dry_run:
-        print(f"  [SCAN] {output}/ddd/DDD.onnx -> {output_path}")
+        print(f"  [SCAN] {output}/ddd/DDD.onnx, {output}/vhs_restore/*.onnx -> {output_path}")
         return
 
     models: dict[str, dict[str, str]] = {}
@@ -711,6 +717,14 @@ def generate_onnx_deint_models_json(output: Path, dry_run: bool) -> None:
             "path": str(ddd_model_path.relative_to(output).as_posix()),
             "architecture": "ddd",
         }
+
+    for system in ("pal", "secam"):
+        model_path = output / "vhs_restore" / f"vhs_restore_{system}.onnx"
+        if model_path.is_file():
+            models[model_path.stem] = {
+                "path": model_path.relative_to(output).as_posix(),
+                "architecture": "vhs_restore",
+            }
 
     manifest = {"version": 1, "models": models}
     try:

@@ -50,6 +50,24 @@ class OnnxDeintManifestTest(unittest.TestCase):
                 },
             )
 
+    def test_vhs_restore_is_registered_only_in_deint_manifest(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            output = Path(temp_dir)
+            for relative_path in ("ddd/DDD.onnx", "vhs_restore/vhs_restore_pal.onnx",
+                                  "vhs_restore/vhs_restore_secam.onnx", "liveaction/example.onnx"):
+                path = output / relative_path
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_bytes(b"fixture")
+            run_all.generate_models_json(output, dry_run=False)
+            run_all.generate_onnx_deint_models_json(output, dry_run=False)
+            generic = read_manifest(output, "models.json")["models"]
+            deint = read_manifest(output)["models"]
+            self.assertEqual(set(generic), {"example"})
+            self.assertEqual(set(deint), {"DDD", "vhs_restore_pal", "vhs_restore_secam"})
+            self.assertEqual(deint["vhs_restore_pal"], {
+                "path": "vhs_restore/vhs_restore_pal.onnx", "architecture": "vhs_restore",
+            })
+
     def test_stdeint_models_are_not_registered(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
             output = Path(temp_dir)
@@ -124,7 +142,6 @@ class OnnxDeintManifestTest(unittest.TestCase):
         self.assertNotIn("export_stdeint.py", {script for script, _ in run_all.CONVERT_COMMANDS})
         self.assertNotIn("stdeint", run_all.LICENSE_MAP)
 
-
     def test_restoration_dry_run_plans_download_and_conversion_without_writing(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
             output = Path(temp_dir) / "output"
@@ -134,7 +151,9 @@ class OnnxDeintManifestTest(unittest.TestCase):
                 check=False, capture_output=True, text=True,
             )
             self.assertEqual(result.returncode, 0, result.stderr)
-            for expected in ('2xLiveActionV1_SPAN_490000.onnx', '2xVHS2HD-RealPLKSR.onnx', 'import_restoration_models.py'):
+            for expected in ("2xLiveActionV1_SPAN_490000.onnx", "2xVHS2HD-RealPLKSR.onnx",
+                             "1x_vhs-restore_pal_compact_80k.pth", "1x_vhs-restore_secam_compact_80k.pth",
+                             "import_restoration_models.py", "export_vhs_restore.py", "vhs_restore/*.onnx"):
                 self.assertIn(expected, result.stdout)
             self.assertFalse(output.exists())
 

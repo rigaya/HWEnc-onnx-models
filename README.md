@@ -3,12 +3,12 @@
 [**日本語版はこちら / Japanese**](README.ja.md)
 
 Build tools for ONNX models used by `--vpp-onnx` and `--vpp-rife-ov` in
-QSVEnc / NVEnc / VCEEnc. QSVEnc's ONNX deinterlacer uses
-`--vpp-onnx-deint` with `onnx_deint_models.json`.
+QSVEnc / NVEnc / VCEEnc. NVEnc/QSVEncのONNXデインターレーサーは次を使用する:
+`--vpp-onnx-deint`、VHSフィールド修復は`--vpp-vhs-restore`を使用する。
+内部台帳は`onnx_deint_models.json`を共有する。
 
-Generates 257 `--vpp-onnx` models (245 FP32 + 12 INT8) across 30 families,
-10 RIFE models and the MIT-licensed DDD model with a
-single command: download → convert or extract → INT8 quantize → manifests.
+汎用`--vpp-onnx`の30ファミリー・257モデル（FP32 245 + INT8 12）、RIFE 10モデル、
+DDD（MIT）、vhs-restore PAL/SECAM（GPL-3.0）を一括生成する。
 DDD is downloaded from a fixed upstream commit and converted from its pinned
 checkpoint with `export_ddd.py`.
 
@@ -88,21 +88,20 @@ output/
 ├── websr/
 ├── models.json              # --vpp-onnx model manifest
 ├── rife_ov_models.json      # --vpp-rife-ov model manifest
-└── onnx_deint_models.json   # QSVEnc --vpp-onnx-deint manifest
+└── onnx_deint_models.json   # インタレ解除・VHS修復共通マニフェスト
 ```
 
-`architecture` in `onnx_deint_models.json` is an internal tensor contract
-(`ddd` at present), not a public command-line switch. `model=` is the
-manifest registration name; direct ONNX paths are not accepted. DDD is
-distributed in the dedicated `onnx_models_<version>_deint_ddd.zip`
-archive with its MIT license and a DDD-only `onnx_deint_models.json`.
+`onnx_deint_models.json`の`architecture`は`ddd`と`vhs_restore`の内部テンソル契約。
+`model=`には登録名を指定する。ONNXの直接パスは受け付けない。
+`onnx_models_<version>_deint.zip`にDDDとvhs-restore、各ライセンス、共通マニフェストを収録する。
 ST-DeInt download, conversion, and manifest generation are all skipped.
 
-### Deinterlacer manifests by backend
+### バックエンド別フィールド処理用マニフェスト
 
 | Backend | Option | Manifest | Registered names |
 |---------|--------|----------|------------------|
-| QSVEnc | `--vpp-onnx-deint model=<name>` | `onnx_deint_models.json` | `DDD` |
+| NVEnc/QSVEnc | `--vpp-onnx-deint model=<name>` | `onnx_deint_models.json` | `DDD` |
+| NVEnc/QSVEnc | `--vpp-vhs-restore model=<name>` | `onnx_deint_models.json` | `vhs_restore_pal`、`vhs_restore_secam` |
 
 ## Model Families
 
@@ -130,6 +129,7 @@ ST-DeInt download, conversion, and manifest generation are all skipped.
 | hdrtvnetpp | PyTorch .pth | 2 | - | 2 |
 | liveaction | ONNX（作者配布） | 1 | - | 1 |
 | vhs2hd | ONNX（作者配布） | 1 | - | 1 |
+| vhs_restore | PyTorch .pth | 2 | - | 2 |
 | nnedi3 | Python weights | 10 | - | 10 |
 | nafnet | PyTorch .pth | 4 | - | 4 |
 | ravu | Python weights | 21 | - | 21 |
@@ -227,8 +227,6 @@ A `LICENSE.txt` is placed in each `<family>/` directory with full provenance det
 | EDVR | Apache-2.0 | BasicSR Authors / OpenMMLab |
 | FSRCNNX | **GPL-3.0** (igv's trained weights) | igv, nessotrin, TianZerL |
 | HDRTVNet++ | MIT | Hoven Li |
-| LiveActionV1 SPAN | Apache-2.0（NOTICE同梱） | jcj83429 |
-| VHS2HD RealPLKSR | CC-BY-SA-4.0 | starinspace |
 | FBCNN | Apache-2.0 | Jiaxi Jiang, Kai Zhang, Radu Timofte |
 | NAFNet | MIT | megvii-model |
 | NNEDI3 | **LGPL-3.0** (trained weights) | bjin |
@@ -236,6 +234,9 @@ A `LICENSE.txt` is placed in each `<family>/` directory with full provenance det
 | Real-CUGAN | MIT | bilibili |
 | Real-ESRGAN | BSD-3-Clause | Xintao Wang |
 | RIFE v4.x | MIT | Megvii, hzwer |
+| LiveActionV1 SPAN | Apache-2.0（NOTICE同梱） | jcj83429 |
+| VHS2HD RealPLKSR | CC-BY-SA-4.0 | starinspace |
+| vhs-restore PAL/SECAM | GPL-3.0 | itewreed |
 | DDD | MIT | Vincent van de Schaft (fixed upstream commit) |
 | super-image (PAN, CARN, A2N, AWSRN, MSRN) | Apache-2.0 | Eugene Siow et al. |
 | waifu2x | MIT | nagadomi, nihui (ncnn topology) |
@@ -250,17 +251,22 @@ The conversion scripts in this repository are licensed under the MIT License.
 
 ## Generated result counts
 
-With the default pipeline, the output contains 257 generic `--vpp-onnx`
-models (245 FP32 + 12 INT8), 10 RIFE models, and DDD, plus manifests for the
-generic, RIFE, and QSVEnc deinterlacer registries. ST-DeInt is neither
-downloaded nor generated.
+標準パイプラインは汎用`--vpp-onnx`の257モデル（FP32 245 + INT8 12）、RIFE 10モデル、
+DDD、vhs-restore 2モデルと各マニフェストを生成する。ST-DeIntは取得・生成しない。
 
-## 実写修復モデル
+## 実写・VHS修復モデルの追加
 
-LiveActionV1 SPANは作者配布のONNXをSHA-256とonnx.checkerで検証し、改変せずに収録する。
-`--vpp-onnx model=2xliveactionv1_span_490000`で選択できるRGB入力の2倍拡大モデル。
-Apache-2.0のライセンス本文とNOTICEをliveaction/LICENSE.txtに同梱する。
+LiveActionV1 SPANとVHS2HD RealPLKSRは作者配布のONNXを改変せずSHA-256検証後に収録する。
+汎用`--vpp-onnx`の登録名は`2xliveactionv1_span_490000`、`2xvhs2hd-realplksr`。
+各モデルはRGB入力・2倍拡大で、ライセンスはそれぞれApache-2.0（NOTICE同梱）、CC-BY-SA-4.0。
 
-VHS2HD RealPLKSRも作者配布のONNXを同様に検証し、改変せずに収録する。
-`--vpp-onnx model=2xvhs2hd-realplksr`で選択できるRGB入力の2倍拡大モデル。
-CC-BY-SA-4.0の由来と条件はvhs2hd/LICENSE.txtに同梱する。
+vhs-restore PAL/SECAM（GPL-3.0）は`export_vhs_restore.py`でCompact重みから変換する。
+登録名は`vhs_restore_pal`、`vhs_restore_secam`、マニフェストの`architecture`は`vhs_restore`。
+汎用`models.json`には登録せず、DDDと同じ`onnx_deint_models.json`に登録する。
+`--vpp-vhs-restore`はフィールドを上下配置→等倍修復→元の配置へ復元→デインターレースの順で処理し、
+作者の事前ノイズ除去は含まない。`mode=bob`は倍fps、`mode=normal`は元のfps。
+ONNXはフィールド修復を担当し、インタレ解除は既存のGPU版Bwdifが行う。
+
+`onnx_models_<version>_deint.zip`にDDD、vhs-restore、各ライセンスと共通マニフェストを収録する。
+GPLモデルの元のPTH重みと再現用変換器は`vhs_restore/source/`に同梱する。
+旧DDD専用アーカイブを使っている場合も、新しいデインターレース用アーカイブを同じディレクトリに展開する。
