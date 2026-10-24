@@ -125,5 +125,19 @@ class OnnxDeintManifestTest(unittest.TestCase):
         self.assertNotIn("stdeint", run_all.LICENSE_MAP)
 
 
+    def test_restoration_dry_run_plans_download_and_conversion_without_writing(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            output = Path(temp_dir) / "output"
+            result = subprocess.run(
+                [sys.executable, str(SCRIPT_DIR / "run_all.py"), "--output", str(output),
+                 "--dry-run", "--skip-int8"],
+                check=False, capture_output=True, text=True,
+            )
+            self.assertEqual(result.returncode, 0, result.stderr)
+            for expected in ('2xLiveActionV1_SPAN_490000.onnx', 'import_restoration_models.py'):
+                self.assertIn(expected, result.stdout)
+            self.assertFalse(output.exists())
+
+
 if __name__ == "__main__":
     unittest.main()

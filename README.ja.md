@@ -4,7 +4,7 @@ QSVEnc / NVEnc / VCEEnc の `--vpp-onnx` と `--vpp-rife-ov` で使用する
 ONNXモデルのビルドツール群。QSVEncのONNXデインターレーサーは
 `--vpp-onnx-deint` と `onnx_deint_models.json` を使用する。
 
-`--vpp-onnx` 向け28ファミリー・255モデル（FP32 243 + INT8 12）、RIFE 10モデルと
+`--vpp-onnx` 向け29ファミリー・256モデル（FP32 244 + INT8 12）、RIFE 10モデルと
 MITライセンスのDDDを、1コマンドでダウンロード → 変換または展開 →
 INT8量子化 → マニフェスト生成まで実行する。DDDは固定upstreamコミットとcheckpointから
 `export_ddd.py`で再現可能に変換する。
@@ -124,6 +124,7 @@ DDDは`onnx_models_<version>_deint_ddd.zip`専用アーカイブ（DDD、LICENSE
 | fbcnn | PyTorch .pth | 4 | - | 4 |
 | fsrcnnx | C++ header | 4 | - | 4 |
 | hdrtvnetpp | PyTorch .pth | 2 | - | 2 |
+| liveaction | ONNX（作者配布） | 1 | - | 1 |
 | nnedi3 | Python weights | 10 | - | 10 |
 | nafnet | PyTorch .pth | 4 | - | 4 |
 | ravu | Python weights | 21 | - | 21 |
@@ -134,9 +135,9 @@ DDDは`onnx_models_<version>_deint_ddd.zip`専用アーカイブ（DDD、LICENSE
 | superimage | PyTorch .pth | 24 | - | 24 |
 | waifu2x | JSON weights | 34 | - | 34 |
 | websr | JSON weights | 9 | - | 9 |
-| **--vpp-onnx 合計** | | **243** | **12** | **255** |
+| **--vpp-onnx 合計** | | **244** | **12** | **256** |
 
-DDDは専用デインターレースモデルのため、上記の汎用`--vpp-onnx`合計255には含めない。
+DDDは専用デインターレースモデルのため、上記の汎用`--vpp-onnx`合計256には含めない。
 動的H/WのONNX契約は`(1,9,H,W) -> (1,3,H,W)`で、欠落フィールドを出力し、推論後の
 フィールドweaveはQSVEnc側で行う。
 
@@ -218,6 +219,7 @@ nncf (Neural Network Compression Framework) の Post-Training Quantization で F
 | EDVR | Apache-2.0 | BasicSR Authors / OpenMMLab |
 | FSRCNNX | **GPL-3.0** (igvの学習済み重み) | igv, nessotrin, TianZerL |
 | HDRTVNet++ | MIT | Hoven Li |
+| LiveActionV1 SPAN | Apache-2.0（NOTICE同梱） | jcj83429 |
 | FBCNN | Apache-2.0 | Jiaxi Jiang, Kai Zhang, Radu Timofte |
 | NAFNet | MIT | megvii-model |
 | NNEDI3 | **LGPL-3.0** (学習済み重み) | bjin |
@@ -239,5 +241,11 @@ nncf (Neural Network Compression Framework) の Post-Training Quantization で F
 
 ## 生成結果数
 
-デフォルトのパイプラインでは、汎用 `--vpp-onnx` モデル255個（FP32 243 + INT8 12）、
+デフォルトのパイプラインでは、汎用 `--vpp-onnx` モデル256個（FP32 244 + INT8 12）、
 RIFE 10個、DDDと各マニフェストを生成する。ST-DeIntは取得も生成もしない。
+
+## 実写修復モデル
+
+LiveActionV1 SPANは作者配布のONNXをSHA-256とonnx.checkerで検証し、改変せずに収録する。
+`--vpp-onnx model=2xliveactionv1_span_490000`で選択できるRGB入力の2倍拡大モデル。
+Apache-2.0のライセンス本文とNOTICEをliveaction/LICENSE.txtに同梱する。

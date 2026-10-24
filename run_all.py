@@ -70,6 +70,11 @@ REPOS = [
     ("BasicSR", "https://github.com/XPixelGroup/BasicSR/archive/refs/tags/v1.4.2.zip", "_work/repos/BasicSR"),
 ]
 
+# 作者の固定コミットまたは配布アセットを取得し、変換段階でSHA-256を検証する。
+RESTORATION_ONNX = [
+    ("https://raw.githubusercontent.com/jcj83429/upscaling/5d8cdd2e17750b64be39ccab3a8763d91128fe15/2xLiveActionV1_SPAN/2xLiveActionV1_SPAN_490000.onnx", "_work/restoration/2xLiveActionV1_SPAN_490000.onnx"),
+]
+
 REALCUGAN_WEIGHTS_URL = "https://github.com/bilibili/ailab/releases/download/Real-CUGAN/updated_weights.zip"
 ANIME4K_RELEASE_URL = "https://github.com/bloc97/Anime4K/releases/download/v4.0.1/Anime4K_v4.0.zip"
 RIFE_MODELS_URL = "https://github.com/AmusementClub/vs-mlrt/releases/download/model-20220923/rife_v8.7z"
@@ -152,6 +157,7 @@ KAIR_MODELS = [
 # ---------------------------------------------------------------------------
 
 CONVERT_COMMANDS = [
+    ("import_restoration_models.py", ["--models-dir", "{work}/restoration", "--output", "{out}"]),
     # --- GLSL based (self-contained, read shaders straight from the repos) ---
     ("export_acnet.py", ["--glsl-dir", "{repos}/ACNetGLSL/glsl/acnet", "--output", "{out}/acnet"]),
     ("export_arnet.py", ["--glsl-dir", "{repos}/ACNetGLSL/glsl/arnet", "--output", "{out}/arnet"]),
@@ -326,6 +332,10 @@ def download_phase(output: Path, dry_run: bool) -> None:
 
     print("  Downloading EDVR-M weights...")
     for url, rel_dest in EDVR_RELEASES:
+        download_file(url, output / rel_dest, dry_run)
+
+    print("  実写・VHS修復モデルをダウンロード...")
+    for url, rel_dest in RESTORATION_ONNX:
         download_file(url, output / rel_dest, dry_run)
 
     print("  Downloading EDSR baseline weights...")
@@ -577,6 +587,7 @@ LICENSE_MAP = {
     "fbcnn": "fbcnn.txt",
     "fsrcnnx": "fsrcnnx.txt",
     "hdrtvnetpp": "hdrtvnetpp.txt",
+    "liveaction": "liveaction.txt",
     "nnedi3": "nnedi3.txt",
     "nafnet": "nafnet.txt",
     "ravu": "ravu.txt",
