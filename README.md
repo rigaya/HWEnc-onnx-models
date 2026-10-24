@@ -6,7 +6,7 @@ Build tools for ONNX models used by `--vpp-onnx` and `--vpp-rife-ov` in
 QSVEnc / NVEnc / VCEEnc. QSVEnc's ONNX deinterlacer uses
 `--vpp-onnx-deint` with `onnx_deint_models.json`.
 
-Generates 256 `--vpp-onnx` models (244 FP32 + 12 INT8) across 29 families,
+Generates 257 `--vpp-onnx` models (245 FP32 + 12 INT8) across 30 families,
 10 RIFE models and the MIT-licensed DDD model with a
 single command: download → convert or extract → INT8 quantize → manifests.
 DDD is downloaded from a fixed upstream commit and converted from its pinned
@@ -129,6 +129,7 @@ ST-DeInt download, conversion, and manifest generation are all skipped.
 | fsrcnnx | C++ header | 4 | - | 4 |
 | hdrtvnetpp | PyTorch .pth | 2 | - | 2 |
 | liveaction | ONNX（作者配布） | 1 | - | 1 |
+| vhs2hd | ONNX（作者配布） | 1 | - | 1 |
 | nnedi3 | Python weights | 10 | - | 10 |
 | nafnet | PyTorch .pth | 4 | - | 4 |
 | ravu | Python weights | 21 | - | 21 |
@@ -139,7 +140,7 @@ ST-DeInt download, conversion, and manifest generation are all skipped.
 | superimage | PyTorch .pth | 24 | - | 24 |
 | waifu2x | JSON weights | 34 | - | 34 |
 | websr | JSON weights | 9 | - | 9 |
-| **--vpp-onnx Total** | | **244** | **12** | **256** |
+| **--vpp-onnx Total** | | **245** | **12** | **257** |
 
 DDD is a dedicated deinterlacer model and is not included in the generic
 `--vpp-onnx` total above. Its dynamic-H/W ONNX contract is
@@ -227,6 +228,7 @@ A `LICENSE.txt` is placed in each `<family>/` directory with full provenance det
 | FSRCNNX | **GPL-3.0** (igv's trained weights) | igv, nessotrin, TianZerL |
 | HDRTVNet++ | MIT | Hoven Li |
 | LiveActionV1 SPAN | Apache-2.0（NOTICE同梱） | jcj83429 |
+| VHS2HD RealPLKSR | CC-BY-SA-4.0 | starinspace |
 | FBCNN | Apache-2.0 | Jiaxi Jiang, Kai Zhang, Radu Timofte |
 | NAFNet | MIT | megvii-model |
 | NNEDI3 | **LGPL-3.0** (trained weights) | bjin |
@@ -248,8 +250,8 @@ The conversion scripts in this repository are licensed under the MIT License.
 
 ## Generated result counts
 
-With the default pipeline, the output contains 256 generic `--vpp-onnx`
-models (244 FP32 + 12 INT8), 10 RIFE models, and DDD, plus manifests for the
+With the default pipeline, the output contains 257 generic `--vpp-onnx`
+models (245 FP32 + 12 INT8), 10 RIFE models, and DDD, plus manifests for the
 generic, RIFE, and QSVEnc deinterlacer registries. ST-DeInt is neither
 downloaded nor generated.
 
@@ -258,3 +260,7 @@ downloaded nor generated.
 LiveActionV1 SPANは作者配布のONNXをSHA-256とonnx.checkerで検証し、改変せずに収録する。
 `--vpp-onnx model=2xliveactionv1_span_490000`で選択できるRGB入力の2倍拡大モデル。
 Apache-2.0のライセンス本文とNOTICEをliveaction/LICENSE.txtに同梱する。
+
+VHS2HD RealPLKSRも作者配布のONNXを同様に検証し、改変せずに収録する。
+`--vpp-onnx model=2xvhs2hd-realplksr`で選択できるRGB入力の2倍拡大モデル。
+CC-BY-SA-4.0の由来と条件はvhs2hd/LICENSE.txtに同梱する。

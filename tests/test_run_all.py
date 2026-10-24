@@ -134,7 +134,7 @@ class OnnxDeintManifestTest(unittest.TestCase):
                 check=False, capture_output=True, text=True,
             )
             self.assertEqual(result.returncode, 0, result.stderr)
-            for expected in ('2xLiveActionV1_SPAN_490000.onnx', 'import_restoration_models.py'):
+            for expected in ('2xLiveActionV1_SPAN_490000.onnx', '2xVHS2HD-RealPLKSR.onnx', 'import_restoration_models.py'):
                 self.assertIn(expected, result.stdout)
             self.assertFalse(output.exists())
 

@@ -13,6 +13,7 @@ import onnx
 
 MODELS = (
     ("2xLiveActionV1_SPAN_490000.onnx", "liveaction", "bfa72f3c6347076aed140d0836cee30c27ea434c047beeaf9466469483836ecc"),
+    ("2xVHS2HD-RealPLKSR.onnx", "vhs2hd", "2b7ec70d9216f847ef46bcec91bb14202112911823f639d171365973ae14c826"),
 )
 
 

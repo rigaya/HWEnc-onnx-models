@@ -73,6 +73,7 @@ REPOS = [
 # 作者の固定コミットまたは配布アセットを取得し、変換段階でSHA-256を検証する。
 RESTORATION_ONNX = [
     ("https://raw.githubusercontent.com/jcj83429/upscaling/5d8cdd2e17750b64be39ccab3a8763d91128fe15/2xLiveActionV1_SPAN/2xLiveActionV1_SPAN_490000.onnx", "_work/restoration/2xLiveActionV1_SPAN_490000.onnx"),
+    ("https://github.com/starinspace/StarinspaceUpscale/releases/download/Models/2xVHS2HD-RealPLKSR.onnx", "_work/restoration/2xVHS2HD-RealPLKSR.onnx"),
 ]
 
 REALCUGAN_WEIGHTS_URL = "https://github.com/bilibili/ailab/releases/download/Real-CUGAN/updated_weights.zip"
@@ -588,6 +589,7 @@ LICENSE_MAP = {
     "fsrcnnx": "fsrcnnx.txt",
     "hdrtvnetpp": "hdrtvnetpp.txt",
     "liveaction": "liveaction.txt",
+    "vhs2hd": "vhs2hd.txt",
     "nnedi3": "nnedi3.txt",
     "nafnet": "nafnet.txt",
     "ravu": "ravu.txt",
