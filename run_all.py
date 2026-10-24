@@ -65,7 +65,6 @@ REPOS = [
     ("FBCNN", "https://github.com/jiaxi-jiang/FBCNN/archive/refs/heads/main.zip", "_work/repos/FBCNN"),
     ("mpv-prescalers", "https://github.com/bjin/mpv-prescalers/archive/refs/heads/source.zip", "_work/repos/mpv-prescalers"),
     ("HDRTVNet-plus", "https://github.com/xiaom233/HDRTVNet-plus/archive/refs/heads/main.zip", "_work/repos/HDRTVNet-plus"),
-    ("ST-DeInt", "https://github.com/yuqing-liu-dut/ST-DeInt/archive/refs/heads/main.zip", "_work/repos/ST-DeInt"),
     # DDD は upstream の固定コミットから取得し、export_ddd.py で再現可能に変換する。
     ("DDD", "https://github.com/vincentvdschaft/Disney-Deep-Deinterlacing/archive/ea3442a2a403b91f950a6f4688e872ed0fe60460.zip", "_work/repos/DDD"),
     ("BasicSR", "https://github.com/XPixelGroup/BasicSR/archive/refs/tags/v1.4.2.zip", "_work/repos/BasicSR"),
@@ -191,9 +190,6 @@ CONVERT_COMMANDS = [
 
     # --- SDR-to-HDR (HDRTVNet++ の学習済み重み, MIT) ---
     ("export_hdrtvnetpp.py", ["--repo-root", "{repos}/HDRTVNet-plus", "--weights-dir", "{repos}/HDRTVNet-plus/pretrained_models", "--output", "{out}/hdrtvnetpp"]),
-    # --- デインターレース用の公式学習済み重み ---
-    ("export_stdeint.py", ["--source-dir", "{repos}/ST-DeInt", "--output", "{out}/stdeint"]),
-    ("export_stdeint.py", ["--source-dir", "{repos}/ST-DeInt", "--output", "{out}/stdeint", "--no-deform"]),
     # Disney Deep Deinterlacing (MIT、固定コミットの checkpoint SHA-256 を検証)
     ("export_ddd.py", ["--checkpoint", "{repos}/DDD/pretrained_checkpoint/model_state_dict.pt", "--output", "{out}/ddd"]),
     # RIFE is distributed as verified prebuilt ONNX files in the upstream archive.
@@ -587,7 +583,6 @@ LICENSE_MAP = {
     "realcugan": "realcugan.txt",
     "realesrgan": "realesrgan.txt",
     "rife": "rife.txt",
-    "stdeint": "stdeint.txt",
     "srmd": "srmd.txt",
     "superimage": "superimage.txt",
     "waifu2x": "waifu2x.txt",
@@ -621,7 +616,8 @@ def install_licenses(output: Path, dry_run: bool) -> None:
 # Phase 4: models.json
 # ---------------------------------------------------------------------------
 
-# RIFE、ST-DeInt、DDDは専用フィルタ用なので、汎用models.jsonには登録しない。
+# RIFE、DDDは専用フィルタ用なので、汎用models.jsonには登録しない。
+# stdeintは現在生成しないが、再利用した出力に残る旧生成物の混入も防止する。
 SCAN_EXCLUDE = {"_work", "rife", "stdeint", "ddd"}
 
 
@@ -687,45 +683,15 @@ def generate_rife_ov_models_json(output: Path, dry_run: bool) -> None:
         print(f"  [FAIL] rife_ov_models.json: {err}")
 
 
-def generate_stdeint_ov_models_json(output: Path, dry_run: bool) -> None:
-    print("[PHASE 4] generate stdeint_ov_models.json")
-    output_path = output / "stdeint_ov_models.json"
-    if dry_run:
-        print(f"  [SCAN] {output}/stdeint/stdeint*.onnx -> {output_path}")
-        return
-
-    models = {}
-    for model_name in ("stdeint", "stdeint_fast"):
-        model_path = output / "stdeint" / f"{model_name}.onnx"
-        if model_path.is_file():
-            models[model_name] = {"path": str(model_path.relative_to(output).as_posix())}
-
-    manifest = {"version": 1, "models": models}
-    try:
-        output_path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
-        print(f"  [OK] {output_path}")
-        print(f"  models: {len(models)}")
-    except Exception as err:
-        print(f"  [FAIL] stdeint_ov_models.json: {err}")
-
-
 def generate_onnx_deint_models_json(output: Path, dry_run: bool) -> None:
     """生成したデインターレース用ONNXモデルのマニフェストを出力する。"""
     print("[PHASE 4] generate onnx_deint_models.json")
     output_path = output / "onnx_deint_models.json"
     if dry_run:
-        print(f"  [SCAN] {output}/stdeint/stdeint*.onnx + {output}/ddd/DDD.onnx -> {output_path}")
+        print(f"  [SCAN] {output}/ddd/DDD.onnx -> {output_path}")
         return
 
     models: dict[str, dict[str, str]] = {}
-    for model_name in ("stdeint", "stdeint_fast"):
-        model_path = output / "stdeint" / f"{model_name}.onnx"
-        if model_path.is_file():
-            models[model_name] = {
-                "path": str(model_path.relative_to(output).as_posix()),
-                "architecture": "stdeint",
-            }
-
     ddd_model_path = output / "ddd" / "DDD.onnx"
     if ddd_model_path.is_file():
         models["DDD"] = {
@@ -774,7 +740,6 @@ def main() -> int:
     install_licenses(output, args.dry_run)
     generate_models_json(output, args.dry_run)
     generate_rife_ov_models_json(output, args.dry_run)
-    generate_stdeint_ov_models_json(output, args.dry_run)
     generate_onnx_deint_models_json(output, args.dry_run)
     print("[RUN_ALL] done")
     return 0

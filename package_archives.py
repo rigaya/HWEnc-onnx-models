@@ -2,12 +2,12 @@
 """Package converted ONNX models into release zip archives.
 
 Includes only generated models / manifests / per-family LICENSE.txt.
-中間ダウンロード（_work）とST-DeInt（upstreamライセンスUnknown）は除外する。
+中間ダウンロード（_work）と、旧出力に残る可能性があるST-DeIntは除外する。
 DDDはMITライセンスとDDD専用デインターレース用マニフェストを別アーカイブに収録する。
 
 Archives:
     onnx_models_<version>_main.zip
-        fbcnn/nafnet/stdeint/ddd と両デインターレース用マニフェストを除く全ファミリー。
+        fbcnn/nafnet/stdeint/ddd とデインターレース用マニフェストを除く全ファミリー。
     onnx_models_<version>_fbcnn_nafnet.zip
         fbcnn + nafnet (split for the GitHub 2GB release asset limit).
     onnx_models_<version>_deint_ddd.zip

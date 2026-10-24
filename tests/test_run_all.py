@@ -26,7 +26,7 @@ def read_manifest(output: Path, filename: str = "onnx_deint_models.json") -> dic
 
 
 class OnnxDeintManifestTest(unittest.TestCase):
-    def test_all_models_are_registered_with_architecture(self) -> None:
+    def test_only_ddd_is_registered_with_architecture(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
             output = Path(temp_dir)
             for relative_path in (
@@ -45,14 +45,12 @@ class OnnxDeintManifestTest(unittest.TestCase):
                 {
                     "version": 1,
                     "models": {
-                        "stdeint": {"path": "stdeint/stdeint.onnx", "architecture": "stdeint"},
-                        "stdeint_fast": {"path": "stdeint/stdeint_fast.onnx", "architecture": "stdeint"},
                         "DDD": {"path": "ddd/DDD.onnx", "architecture": "ddd"},
                     },
                 },
             )
 
-    def test_missing_ddd_is_not_registered(self) -> None:
+    def test_stdeint_models_are_not_registered(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
             output = Path(temp_dir)
             for model_name in ("stdeint", "stdeint_fast"):
@@ -62,7 +60,7 @@ class OnnxDeintManifestTest(unittest.TestCase):
 
             run_all.generate_onnx_deint_models_json(output, dry_run=False)
 
-            self.assertEqual(set(read_manifest(output)["models"]), {"stdeint", "stdeint_fast"})
+            self.assertEqual(read_manifest(output), {"version": 1, "models": {}})
 
     def test_no_models_writes_empty_manifest(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -119,27 +117,12 @@ class OnnxDeintManifestTest(unittest.TestCase):
             self.assertEqual(result.returncode, 0, result.stderr)
             self.assertIn("[PHASE 4] generate onnx_deint_models.json", result.stdout)
             self.assertIn("ddd/DDD.onnx", result.stdout)
+            self.assertNotIn("stdeint", result.stdout.lower())
 
-    def test_legacy_manifest_output_is_unchanged(self) -> None:
-        with tempfile.TemporaryDirectory() as temp_dir:
-            output = Path(temp_dir)
-            for model_name in ("stdeint", "stdeint_fast"):
-                path = output / "stdeint" / f"{model_name}.onnx"
-                path.parent.mkdir(parents=True, exist_ok=True)
-                path.write_bytes(b"test")
-
-            run_all.generate_stdeint_ov_models_json(output, dry_run=False)
-
-            self.assertEqual(
-                read_manifest(output, "stdeint_ov_models.json"),
-                {
-                    "version": 1,
-                    "models": {
-                        "stdeint": {"path": "stdeint/stdeint.onnx"},
-                        "stdeint_fast": {"path": "stdeint/stdeint_fast.onnx"},
-                    },
-                },
-            )
+    def test_pipeline_skips_stdeint_download_and_conversion(self) -> None:
+        self.assertNotIn("ST-DeInt", {name for name, _, _ in run_all.REPOS})
+        self.assertNotIn("export_stdeint.py", {script for script, _ in run_all.CONVERT_COMMANDS})
+        self.assertNotIn("stdeint", run_all.LICENSE_MAP)
 
 
 if __name__ == "__main__":

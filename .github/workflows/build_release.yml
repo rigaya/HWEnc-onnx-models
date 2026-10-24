@@ -111,5 +111,5 @@ jobs:
             `onnx_models_${{ steps.meta.outputs.version_name }}_deint_ddd.zip` contains the MIT-licensed DDD deinterlacer and its DDD-only manifest.
 
             Extract all three archives into the same directory for `--vpp-onnx-model-dir`.
-            ST-DeInt remains excluded from release archives; build it locally with `run_all.py` if needed.
+            ST-DeInt is skipped by the build pipeline and is not included in release archives.
           fail_on_unmatched_files: true

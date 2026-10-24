@@ -4,11 +4,10 @@
 
 Build tools for ONNX models used by `--vpp-onnx` and `--vpp-rife-ov` in
 QSVEnc / NVEnc / VCEEnc. QSVEnc's ONNX deinterlacer uses
-`--vpp-onnx-deint` with `onnx_deint_models.json`; NVEnc and VCEEnc retain the
-active `--vpp-stdeint` interface with `stdeint_ov_models.json`.
+`--vpp-onnx-deint` with `onnx_deint_models.json`.
 
 Generates 255 `--vpp-onnx` models (243 FP32 + 12 INT8) across 28 families,
-10 RIFE models, two ST-DeInt models, and the MIT-licensed DDD model with a
+10 RIFE models and the MIT-licensed DDD model with a
 single command: download → convert or extract → INT8 quantize → manifests.
 DDD is downloaded from a fixed upstream commit and converted from its pinned
 checkpoint with `export_ddd.py`.
@@ -83,35 +82,27 @@ output/
 ├── realcugan/
 ├── realesrgan/
 ├── rife/               # --vpp-rife-ov models; excluded from models.json
-├── stdeint/            # ST-DeInt models; excluded from models.json
 ├── ddd/                # generated DDD.onnx and LICENSE.txt
 ├── srmd/
 ├── waifu2x/
 ├── websr/
 ├── models.json              # --vpp-onnx model manifest
 ├── rife_ov_models.json      # --vpp-rife-ov model manifest
-├── stdeint_ov_models.json   # NVEnc/VCEEnc --vpp-stdeint manifest
 └── onnx_deint_models.json   # QSVEnc --vpp-onnx-deint manifest
 ```
 
 `architecture` in `onnx_deint_models.json` is an internal tensor contract
-(`stdeint` or `ddd`), not a public command-line switch. `model=` is the
+(`ddd` at present), not a public command-line switch. `model=` is the
 manifest registration name; direct ONNX paths are not accepted. DDD is
 distributed in the dedicated `onnx_models_<version>_deint_ddd.zip`
 archive with its MIT license and a DDD-only `onnx_deint_models.json`.
-ST-DeInt remains excluded from release archives because its upstream license is
-still Unknown.
+ST-DeInt download, conversion, and manifest generation are all skipped.
 
 ### Deinterlacer manifests by backend
 
 | Backend | Option | Manifest | Registered names |
 |---------|--------|----------|------------------|
-| QSVEnc | `--vpp-onnx-deint model=<name>` | `onnx_deint_models.json` | `stdeint`, `stdeint_fast`, `DDD` |
-| NVEnc / VCEEnc | `--vpp-stdeint model=<name>` | `stdeint_ov_models.json` | `stdeint`, `stdeint_fast` |
-
-The two manifests are kept separate because each backend consumes a different
-registry. They are generated together by `run_all.py`; only the QSVEnc
-manifest records `architecture` metadata.
+| QSVEnc | `--vpp-onnx-deint model=<name>` | `onnx_deint_models.json` | `DDD` |
 
 ## Model Families
 
@@ -143,7 +134,6 @@ manifest records `architecture` metadata.
 | realcugan | PyTorch .pth | 12 | 2 | 14 |
 | realesrgan | PyTorch .pth | 8 | 2 | 10 |
 | rife | upstream ONNX archive | 10 | - | 10 |
-| stdeint | PyTorch .pt | 2 | - | 2 |
 | srmd | PyTorch .pth | 6 | - | 6 |
 | superimage | PyTorch .pth | 24 | - | 24 |
 | waifu2x | JSON weights | 34 | - | 34 |
@@ -166,11 +156,6 @@ Converts trained weights from bjin/mpv-prescalers via `torch.onnx.export`.
 ### PyTorch .pth Weights
 Converts pretrained models from KAIR, EDSR, Real-ESRGAN, Real-CUGAN, BSRGAN, etc. via `torch.onnx.export`.
 HDRTVNet++ SDR-to-HDR models are converted from the official pretrained weights.
-ST-DeInt is converted from the official pretrained weights into a dynamic H/W
-model using an equivalent GridSample implementation and half-height, 6-channel
-restoration output. Weaving is performed by QSVEnc after inference.
-`stdeint_fast.onnx` is generated with `--no-deform`; it removes deform alignment
-and GridSample for fast fp16 inference with a small quality tradeoff.
 
 DDD is converted from the fixed MIT upstream checkpoint into a dynamic-H/W
 `(1,9,H,W) -> (1,3,H,W)` missing-field model. QSVEnc performs field weaving
@@ -215,14 +200,13 @@ Generates INT8 ONNX from FP32 ONNX using nncf (Neural Network Compression Framew
 | `setup_env.bat` | Python venv setup (Windows) |
 | `quantize_int8.py` | INT8 quantization via nncf |
 | `export_*.py` | Per-family FP32 ONNX conversion scripts |
-| `export_stdeint.py` | Converts the official ST-DeInt weights to full and `--no-deform` fast, half-height 6-channel restoration-output ONNX models |
 | `export_ddd.py` | Converts the fixed MIT DDD checkpoint to dynamic-H/W `(1,9,H,W) -> (1,3,H,W)` missing-field ONNX |
 | `export_edvr.py` | Converts EDVR-M REDS x4 to fixed-resolution, five-frame 15-channel ONNX models |
 | `extract_rife.py` | Extracts RIFE ONNX from the official archive and verifies SHA-256 and I/O shapes |
 | `convert_edsr.py` | EDSR conversion script |
 | `convert_ravu_*.py` | RAVU conversion scripts (4 files, called by export_ravu.py) |
 | `extract_anime4k_upscale_gan_glsl.py` | Anime4K GAN GLSL parsing helper |
-| `package_archives.py` | Creates main, fbcnn/nafnet, and dedicated DDD deinterlacer archives; ST-DeInt remains separate |
+| `package_archives.py` | Creates main, fbcnn/nafnet, and dedicated DDD deinterlacer archives |
 | `requirements.txt` | Python dependencies |
 
 ## License
@@ -248,7 +232,6 @@ A `LICENSE.txt` is placed in each `<family>/` directory with full provenance det
 | Real-CUGAN | MIT | bilibili |
 | Real-ESRGAN | BSD-3-Clause | Xintao Wang |
 | RIFE v4.x | MIT | Megvii, hzwer |
-| ST-DeInt | **Unknown** | Yuqing Liu et al. |
 | DDD | MIT | Vincent van de Schaft (fixed upstream commit) |
 | super-image (PAN, CARN, A2N, AWSRN, MSRN) | Apache-2.0 | Eugene Siow et al. |
 | waifu2x | MIT | nagadomi, nihui (ncnn topology) |
@@ -264,7 +247,6 @@ The conversion scripts in this repository are licensed under the MIT License.
 ## Generated result counts
 
 With the default pipeline, the output contains 255 generic `--vpp-onnx`
-models (243 FP32 + 12 INT8), 10 RIFE models, 2 ST-DeInt models, and DDD,
-plus manifests for the generic, RIFE, ST-DeInt, and QSVEnc deinterlacer
-registries. Release packaging produces a third dedicated DDD archive; ST-DeInt
-is intentionally not included in release archives.
+models (243 FP32 + 12 INT8), 10 RIFE models, and DDD, plus manifests for the
+generic, RIFE, and QSVEnc deinterlacer registries. ST-DeInt is neither
+downloaded nor generated.
