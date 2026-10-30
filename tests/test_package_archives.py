@@ -8,6 +8,7 @@ import sys
 import tempfile
 import zipfile
 import json
+import hashlib
 from pathlib import Path
 import unittest
 
@@ -50,6 +51,8 @@ class PackageArchivesTest(unittest.TestCase):
         for relative_path in (
             "models.json",
             "rife_ov_models.json",
+            "rife/example.onnx",
+            "rife/LICENSE.txt",
             "artcnn/example.onnx",
             "fbcnn/example.onnx",
             "nafnet/example.onnx",
@@ -59,6 +62,9 @@ class PackageArchivesTest(unittest.TestCase):
             "onnx_deint_models.json",
         ):
             touch(output, relative_path)
+        (output / "rife_ov_models.json").write_text(
+            json.dumps({"version": 1, "models": {"example": {"path": "rife/example.onnx"}}}), encoding="utf-8"
+        )
         if include_ddd:
             touch(output, "ddd/DDD.onnx")
             touch(output, "ddd/LICENSE.txt")
@@ -86,8 +92,19 @@ class PackageArchivesTest(unittest.TestCase):
             main = archive_entries(dist / "onnx_models_test_main.zip")
             split = archive_entries(dist / "onnx_models_test_fbcnn_nafnet.zip")
             deint = archive_entries(dist / "onnx_models_test_deint.zip")
+            rife_path = dist / "onnx_models_test_rife.zip"
+            rife = archive_entries(rife_path)
             self.assertIn("models.json", main)
-            self.assertIn("rife_ov_models.json", main)
+            self.assertNotIn("rife_ov_models.json", main)
+            self.assertFalse(any(name.startswith("rife/") for name in main))
+            self.assertEqual(rife, {"rife/example.onnx", "rife/LICENSE.txt", "rife_ov_models.json"})
+            with zipfile.ZipFile(rife_path) as archive:
+                manifest = json.loads(archive.read("rife_ov_models.json"))
+                self.assertIn(manifest["models"]["example"]["path"], rife)
+            digest = hashlib.sha256(rife_path.read_bytes()).hexdigest()
+            line = f"{digest}  {rife_path.name}"
+            self.assertEqual((dist / f"{rife_path.name}.sha256").read_text().strip(), line)
+            self.assertIn(line, (dist / "SHA256SUMS.txt").read_text().splitlines())
             self.assertIn("artcnn/example.onnx", main)
             self.assertNotIn("stdeint/stdeint.onnx", main)
             self.assertNotIn("stdeint/stdeint_fast.onnx", main)
@@ -121,6 +138,16 @@ class PackageArchivesTest(unittest.TestCase):
             result = self.run_packager(output, root / "dist")
             self.assertNotEqual(result.returncode, 0)
             self.assertIn("1x_vhs-restore_pal_compact_80k.pth", result.stderr)
+
+    def test_missing_rife_model_fails_packaging(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            output = root / "output"
+            self.create_common_fixture(output, include_ddd=True)
+            (output / "rife/example.onnx").unlink()
+            result = self.run_packager(output, root / "dist")
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("RIFE", result.stderr)
 
     def test_missing_ddd_fails_release_packaging(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:

@@ -7,11 +7,13 @@ DDDとvhs-restoreはそれぞれのライセンスと共通マニフェストを
 
 Archives:
     onnx_models_<version>_main.zip
-        fbcnn/nafnet/stdeint/ddd/vhs_restoreとデインターレース用マニフェストを除く全ファミリー。
+        fbcnn/nafnet/rife/stdeint/ddd/vhs_restoreと専用マニフェストを除く全ファミリー。
     onnx_models_<version>_fbcnn_nafnet.zip
         fbcnn + nafnet (split for the GitHub 2GB release asset limit).
     onnx_models_<version>_deint.zip
         DDD、vhs-restore、各LICENSE、GPLモデルの元の重み・変換器、共通マニフェスト。
+    onnx_models_<version>_rife.zip
+        RIFEのモデル、ライセンス、専用マニフェスト。
 
 Usage:
     python package_archives.py --input /path/to/output --dist /path/to/dist --version 20260718
@@ -34,6 +36,8 @@ MAIN_EXCLUDE = {
     "_work",
     "fbcnn",
     "nafnet",
+    "rife",
+    "rife_ov_models.json",
     "stdeint",
     "ddd",
     "vhs_restore",
@@ -95,6 +99,7 @@ def main() -> int:
     main_zip = dist_dir / f"onnx_models_{version}_main.zip"
     fbcnn_zip = dist_dir / f"onnx_models_{version}_fbcnn_nafnet.zip"
     deint_zip = dist_dir / f"onnx_models_{version}_deint.zip"
+    rife_zip = dist_dir / f"onnx_models_{version}_rife.zip"
 
     for old in dist_dir.glob("onnx_models_*"):
         if old.is_file():
@@ -118,6 +123,11 @@ def main() -> int:
         raise SystemExit("ERROR: no entries found for main archive")
     if not fbcnn_files:
         raise SystemExit("ERROR: no entries found for fbcnn/nafnet archive")
+    rife_dir = input_dir / "rife"
+    rife_manifest = input_dir / "rife_ov_models.json"
+    if not rife_manifest.is_file() or not (rife_dir / "LICENSE.txt").is_file() or not any(rife_dir.glob("*.onnx")):
+        raise SystemExit("ERROR: RIFEモデル、ライセンス、マニフェストが必要です")
+    rife_files = iter_files(rife_dir) + [rife_manifest]
     ddd_model = input_dir / "ddd" / "DDD.onnx"
     ddd_license = input_dir / "ddd" / "LICENSE.txt"
     if not ddd_model.is_file() or not ddd_license.is_file():
@@ -150,6 +160,11 @@ def main() -> int:
     write_zip(fbcnn_zip, input_dir, fbcnn_files)
 
     archives = [main_zip, fbcnn_zip]
+    print("=== RIFEモデルをパッケージ化 ===")
+    print(f"  zip:   {rife_zip}")
+    print(f"  files: {len(rife_files)}")
+    write_zip(rife_zip, input_dir, rife_files)
+    archives.append(rife_zip)
     # 入力ツリーを変更せず、登録可能なモデルと再現用ソースを同じアーカイブに収録する。
     with tempfile.TemporaryDirectory(prefix="deint_archive_") as temp_dir:
         staging = Path(temp_dir)

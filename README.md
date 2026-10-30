@@ -94,6 +94,7 @@ output/
 `onnx_deint_models.json`の`architecture`は`ddd`と`vhs_restore`の内部テンソル契約。
 `model=`には登録名を指定する。ONNXの直接パスは受け付けない。
 `onnx_models_<version>_deint.zip`にDDDとvhs-restore、各ライセンス、共通マニフェストを収録する。
+RIFEモデルと専用マニフェストは`onnx_models_<version>_rife.zip`に収録する。必要なアーカイブを同じディレクトリに展開する。
 ST-DeInt download, conversion, and manifest generation are all skipped.
 
 ### バックエンド別フィールド処理用マニフェスト
@@ -208,7 +209,7 @@ Generates INT8 ONNX from FP32 ONNX using nncf (Neural Network Compression Framew
 | `convert_edsr.py` | EDSR conversion script |
 | `convert_ravu_*.py` | RAVU conversion scripts (4 files, called by export_ravu.py) |
 | `extract_anime4k_upscale_gan_glsl.py` | Anime4K GAN GLSL parsing helper |
-| `package_archives.py` | Creates main, fbcnn/nafnet, and dedicated DDD deinterlacer archives |
+| `package_archives.py` | main、fbcnn/nafnet、デインターレース、RIFEのアーカイブを作成 |
 | `requirements.txt` | Python dependencies |
 
 ## License

@@ -86,6 +86,7 @@ jobs:
             dist/onnx_models_${{ steps.meta.outputs.version_name }}_main.zip
             dist/onnx_models_${{ steps.meta.outputs.version_name }}_fbcnn_nafnet.zip
             dist/onnx_models_${{ steps.meta.outputs.version_name }}_deint.zip
+            dist/onnx_models_${{ steps.meta.outputs.version_name }}_rife.zip
             dist/*.sha256
             dist/SHA256SUMS.txt
           if-no-files-found: error
@@ -101,15 +102,18 @@ jobs:
             dist/onnx_models_${{ steps.meta.outputs.version_name }}_main.zip
             dist/onnx_models_${{ steps.meta.outputs.version_name }}_fbcnn_nafnet.zip
             dist/onnx_models_${{ steps.meta.outputs.version_name }}_deint.zip
+            dist/onnx_models_${{ steps.meta.outputs.version_name }}_rife.zip
             dist/onnx_models_${{ steps.meta.outputs.version_name }}_main.zip.sha256
             dist/onnx_models_${{ steps.meta.outputs.version_name }}_fbcnn_nafnet.zip.sha256
             dist/onnx_models_${{ steps.meta.outputs.version_name }}_deint.zip.sha256
+            dist/onnx_models_${{ steps.meta.outputs.version_name }}_rife.zip.sha256
             dist/SHA256SUMS.txt
           body: |
             `onnx_models_${{ steps.meta.outputs.version_name }}_main.zip` is the main archive.
             `onnx_models_${{ steps.meta.outputs.version_name }}_fbcnn_nafnet.zip` is the extra archive for fbcnn and nafnet (split for the GitHub 2GB release asset limit).
             `onnx_models_${{ steps.meta.outputs.version_name }}_deint.zip`にはDDD（MIT）とvhs-restore（GPL-3.0）、元の重み・変換器、共通マニフェストを収録。
+            `onnx_models_${{ steps.meta.outputs.version_name }}_rife.zip`にはRIFEモデルと専用マニフェストを収録。
 
-            3つのアーカイブを同じディレクトリに展開し、`--vpp-onnx-model-dir`で指定する。
+            必要なアーカイブを同じディレクトリに展開し、`--vpp-onnx-model-dir`で指定する。
             ST-DeInt is skipped by the build pipeline and is not included in release archives.
           fail_on_unmatched_files: true

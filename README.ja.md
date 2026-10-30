@@ -96,6 +96,7 @@ output/
 （`ddd`と`vhs_restore`）であり、公開CLIの切替スイッチではない。
 `model=` にはマニフェストの登録名を指定し、ONNXファイルの直接パスは受け付けない。
 DDDとvhs-restoreは`onnx_models_<version>_deint.zip`に各LICENSEと共通マニフェストを収録する。
+RIFEモデルと専用マニフェストは`onnx_models_<version>_rife.zip`に収録する。必要なアーカイブを同じディレクトリに展開する。
 vhs-restoreは元のPTH重みと変換器を`vhs_restore/source/`にも収録する。
 旧`_deint_ddd.zip`のマニフェストではvhs-restoreを選択できないため、新しいアーカイブを展開する。ST-DeIntはダウンロード・変換・マニフェスト生成をすべてスキップする。
 
@@ -210,7 +211,7 @@ nncf (Neural Network Compression Framework) の Post-Training Quantization で F
 | `convert_edsr.py` | EDSR 変換スクリプト |
 | `convert_ravu_*.py` | RAVU 変換スクリプト (4本、export_ravu.py から呼出) |
 | `extract_anime4k_upscale_gan_glsl.py` | Anime4K GAN GLSL 解析ヘルパー |
-| `package_archives.py` | main、fbcnn/nafnet、DDD・vhs-restoreのデインターレースアーカイブを作成 |
+| `package_archives.py` | main、fbcnn/nafnet、デインターレース、RIFEのアーカイブを作成 |
 | `requirements.txt` | Python 依存パッケージ |
 
 ## ライセンス
